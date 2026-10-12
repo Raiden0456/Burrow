@@ -55,7 +55,7 @@ The intended setup is a home server that you reach from your laptop and phone ov
 **2. Configure and start:**
 
 ```bash
-git clone https://github.com/raiden0456/gonteractive.git
+git clone https://github.com/Raiden0456/gonteractive.git
 cd gonteractive
 cp .env.example .env   # set APP_PASSWORD, TS_AUTHKEY and TZ at least
 docker compose up -d --build
@@ -67,7 +67,7 @@ docker compose up -d --build
 
 - **Codex (ChatGPT plan)**: log the agent in once, then use the *Codex* preset.
   ```bash
-  docker compose exec app codex login --device-auth
+  docker compose exec -u app app codex login --device-auth
   ```
 - **Claude Code (Claude plan)**: run `claude setup-token` on any machine, put the token into `CLAUDE_CODE_OAUTH_TOKEN` in `.env`, run `docker compose up -d`, then use the *Claude Code* preset.
 - **API providers**: paste an API key, plus a model and base URL for OpenAI-compatible servers.
@@ -75,6 +75,24 @@ docker compose up -d --build
 **5. Optional:** fill in **Settings → Learning preferences** ("About you", content language, daily quiz time) and enable notifications on each device. On iPhone, add the app to the Home Screen first and enable notifications from there.
 
 > If Tailscale already runs on the host, you can drop the `tailscale` service from `compose.yaml`, publish the app port with `ports: ["127.0.0.1:8080:8080"]`, and run `tailscale serve --bg 8080` on the host instead.
+
+## CasaOS
+
+CasaOS imports only the first service of a compose file and cannot build images, so it uses a prebuilt image and a single container. You add HTTPS with Tailscale on the host.
+
+1. Publish the image. Pushing to `main` runs [`.github/workflows/docker.yml`](.github/workflows/docker.yml), which builds `ghcr.io/<owner>/gonteractive` for amd64 and arm64. On the first run, open the package on GitHub (**Packages → gonteractive → Package settings**) and change its visibility to **Public**, so the server can pull it without logging in.
+2. In CasaOS, open **App Store → Custom Install → Import**. Paste [`deploy/casaos/docker-compose.yml`](deploy/casaos/docker-compose.yml), then set `APP_PASSWORD` and `TZ` and install. The app listens on port `8484`, and its data lives in `/DATA/AppData/gonteractive`.
+3. To get HTTPS for the PWA and push notifications, run this on the server (which must be in your tailnet):
+   ```bash
+   sudo tailscale serve --bg --https=443 http://127.0.0.1:8484
+   ```
+   The app is then available at `https://<server-name>.<your-tailnet>.ts.net`. If port 443 is already served, use another one, for example `--https=8443`.
+4. To log in Codex, run:
+   ```bash
+   docker exec -it -u app gonteractive codex login --device-auth
+   ```
+
+Plain `http://<server-ip>:8484` also works on your LAN, but browsers only allow installing the PWA and push notifications over HTTPS.
 
 ## Configuration
 
@@ -89,7 +107,7 @@ Set these in `.env`:
 | `CLAUDE_CODE_OAUTH_TOKEN` | (empty) | Token for the `claude-agent-acp` provider. |
 | `APP_ADDR` | `:8080` | HTTP listen address. |
 | `APP_DATA_DIR` | `data` (`/data` in Docker) | Location of the SQLite database and the Go build cache. |
-| `APP_COOKIE_SECURE` | `true` | Set to `false` when serving over plain HTTP. |
+| `APP_COOKIE_SECURE` | `auto` | `auto` marks the session cookie `Secure` only for HTTPS requests; `true`/`false` force it. |
 | `APP_GO_CACHE` | `$APP_DATA_DIR/gocache` | Go build cache used for drills. |
 
 VAPID keys for push notifications are generated on first start and stored in the database.

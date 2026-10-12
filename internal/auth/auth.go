@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/raiden0456/gonteractive/internal/httpx"
@@ -21,10 +22,12 @@ const (
 type Auth struct {
 	q            *db.Queries
 	passwordHash [32]byte
-	secure       bool
+	secure       *bool
 }
 
-func New(q *db.Queries, password string, secure bool) *Auth {
+// New creates the authenticator. A nil secure marks the session cookie Secure only for requests that
+// arrived over HTTPS, so plain-HTTP LAN access keeps working.
+func New(q *db.Queries, password string, secure *bool) *Auth {
 	return &Auth{q: q, passwordHash: sha256.Sum256([]byte(password)), secure: secure}
 }
 
@@ -86,7 +89,7 @@ func (a *Auth) login(w http.ResponseWriter, r *http.Request) error {
 		Path:     "/",
 		Expires:  expires,
 		HttpOnly: true,
-		Secure:   a.secure,
+		Secure:   a.isSecure(r),
 		SameSite: http.SameSiteLaxMode,
 	})
 	w.WriteHeader(http.StatusNoContent)
@@ -99,9 +102,16 @@ func (a *Auth) logout(w http.ResponseWriter, r *http.Request) error {
 			return err
 		}
 	}
-	http.SetCookie(w, &http.Cookie{Name: cookieName, Path: "/", MaxAge: -1, HttpOnly: true, Secure: a.secure})
+	http.SetCookie(w, &http.Cookie{Name: cookieName, Path: "/", MaxAge: -1, HttpOnly: true, Secure: a.isSecure(r)})
 	w.WriteHeader(http.StatusNoContent)
 	return nil
+}
+
+func (a *Auth) isSecure(r *http.Request) bool {
+	if a.secure != nil {
+		return *a.secure
+	}
+	return r.TLS != nil || strings.EqualFold(r.Header.Get("X-Forwarded-Proto"), "https")
 }
 
 func hashToken(token string) string {

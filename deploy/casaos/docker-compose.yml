@@ -1,0 +1,66 @@
+name: gonteractive
+services:
+  gonteractive:
+    image: ghcr.io/raiden0456/gonteractive:latest
+    container_name: gonteractive
+    network_mode: bridge
+    restart: unless-stopped
+    ports:
+      - target: 8080
+        published: "8484"
+        protocol: tcp
+    environment:
+      APP_PASSWORD: change-me
+      TZ: Europe/Moscow
+      APP_PUSH_CONTACT: you@example.com
+      CLAUDE_CODE_OAUTH_TOKEN: ""
+    volumes:
+      - type: bind
+        source: /DATA/AppData/gonteractive/data
+        target: /data
+      - type: bind
+        source: /DATA/AppData/gonteractive/codex
+        target: /home/app/.codex
+    x-casaos:
+      envs:
+        - container: APP_PASSWORD
+          description:
+            en_US: Password for signing in
+        - container: TZ
+          description:
+            en_US: Time zone for the daily quiz and streaks
+        - container: APP_PUSH_CONTACT
+          description:
+            en_US: Contact e-mail sent to push services
+        - container: CLAUDE_CODE_OAUTH_TOKEN
+          description:
+            en_US: Token from `claude setup-token` for the Claude Code provider
+      ports:
+        - container: "8080"
+          description:
+            en_US: WebUI HTTP port
+      volumes:
+        - container: /data
+          description:
+            en_US: Database and Go build cache
+        - container: /home/app/.codex
+          description:
+            en_US: Codex login (CODEX_HOME)
+x-casaos:
+  main: gonteractive
+  architectures:
+    - amd64
+    - arm64
+  author: Raiden0456
+  developer: Raiden0456
+  category: Education
+  icon: https://cdn.jsdelivr.net/gh/Raiden0456/gonteractive@main/web/public/pwa-512x512.png
+  title:
+    en_US: Gonteractive
+  tagline:
+    en_US: Self-hosted AI tutor for learning Go
+  description:
+    en_US: Lessons, quizzes, coding drills, spaced repetition and a daily quiz for learning Go, powered by your own AI provider.
+  port_map: "8484"
+  scheme: http
+  index: /

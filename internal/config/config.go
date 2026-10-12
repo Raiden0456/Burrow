@@ -11,7 +11,7 @@ type Config struct {
 	Addr         string
 	DataDir      string
 	Password     string
-	CookieSecure bool
+	CookieSecure *bool
 	PushContact  string
 	GoCache      string
 }
@@ -39,11 +39,13 @@ func Load() (Config, error) {
 		return c, errors.New("APP_PASSWORD is required")
 	}
 
-	secure, err := strconv.ParseBool(env("APP_COOKIE_SECURE", "true"))
-	if err != nil {
-		return c, errors.New("APP_COOKIE_SECURE must be a boolean")
+	if v := env("APP_COOKIE_SECURE", "auto"); v != "auto" {
+		secure, err := strconv.ParseBool(v)
+		if err != nil {
+			return c, errors.New("APP_COOKIE_SECURE must be auto, true or false")
+		}
+		c.CookieSecure = &secure
 	}
-	c.CookieSecure = secure
 	return c, nil
 }
 

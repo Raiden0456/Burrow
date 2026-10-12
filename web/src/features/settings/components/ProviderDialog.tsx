@@ -35,7 +35,7 @@ function LoginHint() {
     <div className="flex flex-col gap-1 rounded-lg border bg-muted/40 p-3 text-xs text-muted-foreground">
       <span>{t("settings.provider.loginIntro")}</span>
       <span>
-        {t("settings.provider.loginCodex")} <code className="text-foreground">docker compose exec app codex login --device-auth</code>
+        {t("settings.provider.loginCodex")} <code className="text-foreground">docker compose exec -u app app codex login --device-auth</code>
       </span>
       <span>
         {before}

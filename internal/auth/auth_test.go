@@ -18,7 +18,7 @@ func TestLoginGuardsAPI(t *testing.T) {
 	}
 	t.Cleanup(func() { conn.Close() })
 
-	a := New(db.New(conn), "secret", false)
+	a := New(db.New(conn), "secret", nil)
 	mux := http.NewServeMux()
 	a.Routes(mux)
 	mux.Handle("/api/private", a.Require(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
