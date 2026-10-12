@@ -1,0 +1,438 @@
+modules:
+  - slug: foundations
+    title: Foundations
+    title_ru: Основы
+    topics:
+      - slug: toolchain
+        title: Toolchain, modules and packages
+        title_ru: Инструменты, модули и пакеты
+        objectives:
+          - Use go run, go build, go test, go vet and gofmt confidently
+          - Create a module with go mod init and manage dependencies with go get and go mod tidy
+          - Understand packages, exported vs unexported identifiers and the internal/ directory rule
+          - Know how init functions and package initialization order work
+        objectives_ru:
+          - Уверенно пользоваться go run, go build, go test, go vet и gofmt
+          - Создавать модуль через go mod init и управлять зависимостями с go get и go mod tidy
+          - Понимать пакеты, экспортируемые и неэкспортируемые идентификаторы и правило каталога internal/
+          - Знать, как работают функции init и порядок инициализации пакетов
+      - slug: variables-types
+        title: Variables, constants and basic types
+        title_ru: Переменные, константы и базовые типы
+        objectives:
+          - Declare variables with var and :=, and know where each is allowed
+          - Understand zero values for every built-in type
+          - Use typed and untyped constants and iota
+          - Convert between numeric types explicitly and understand overflow behaviour
+        objectives_ru:
+          - Объявлять переменные через var и := и знать, где допустим каждый вариант
+          - Понимать нулевые значения всех встроенных типов
+          - Использовать типизированные и нетипизированные константы и iota
+          - Явно преобразовывать числовые типы и понимать поведение при переполнении
+      - slug: control-flow
+        title: Control flow
+        title_ru: Управляющие конструкции
+        objectives:
+          - Write if with init statements, for in all its forms and switch without fallthrough
+          - Use labeled break and continue
+          - Understand how for-range iterates over slices, maps, strings, channels, integers and functions
+          - Know loop variable semantics since Go 1.22
+        objectives_ru:
+          - Писать if с инициализацией, for во всех формах и switch без fallthrough
+          - Использовать break и continue с метками
+          - Понимать, как for-range обходит слайсы, мапы, строки, каналы, числа и функции
+          - Знать семантику переменной цикла начиная с Go 1.22
+      - slug: functions
+        title: Functions and closures
+        title_ru: Функции и замыкания
+        objectives:
+          - Use multiple return values, named results and variadic parameters
+          - Treat functions as first-class values and write closures
+          - Understand how defer evaluates its arguments and runs in LIFO order
+          - Recognise when a closure captures a variable versus a value
+        objectives_ru:
+          - Использовать несколько возвращаемых значений, именованные результаты и вариадические параметры
+          - Работать с функциями как со значениями первого класса и писать замыкания
+          - Понимать, как defer вычисляет аргументы и выполняется в порядке LIFO
+          - Различать, когда замыкание захватывает переменную, а когда значение
+
+  - slug: data
+    title: Data structures
+    title_ru: Структуры данных
+    topics:
+      - slug: arrays-slices
+        title: Arrays and slices
+        title_ru: Массивы и слайсы
+        objectives:
+          - Explain the slice header (pointer, length, capacity) and how append grows a slice
+          - Predict aliasing bugs when two slices share a backing array
+          - Use copy, full slice expressions and the slices package
+          - Know the difference between a nil slice and an empty slice
+        objectives_ru:
+          - Объяснять заголовок слайса (указатель, длина, ёмкость) и то, как append его растит
+          - Предсказывать баги алиасинга, когда два слайса делят один массив
+          - Использовать copy, полные выражения среза и пакет slices
+          - Знать разницу между nil-слайсом и пустым слайсом
+      - slug: maps
+        title: Maps
+        title_ru: Мапы
+        objectives:
+          - Create, read, update and delete map entries and use the comma-ok idiom
+          - Understand that map iteration order is random and maps are not safe for concurrent writes
+          - Know which types can be map keys
+          - Use the maps package and struct{} values for sets
+        objectives_ru:
+          - Создавать, читать, обновлять и удалять элементы мапы и использовать идиому comma-ok
+          - Понимать, что порядок обхода мапы случаен и мапы небезопасны для конкурентной записи
+          - Знать, какие типы могут быть ключами мапы
+          - Использовать пакет maps и значения struct{} для множеств
+      - slug: strings-runes
+        title: Strings, bytes and runes
+        title_ru: Строки, байты и руны
+        objectives:
+          - Understand that strings are immutable byte sequences encoded as UTF-8
+          - Iterate by byte versus by rune and handle multi-byte characters correctly
+          - Build strings efficiently with strings.Builder and use the strings, strconv and unicode/utf8 packages
+          - Convert between string, []byte and []rune and know the allocation cost
+        objectives_ru:
+          - Понимать, что строки — неизменяемые последовательности байтов в UTF-8
+          - Обходить строку по байтам и по рунам и корректно работать с многобайтовыми символами
+          - Эффективно собирать строки через strings.Builder и пользоваться пакетами strings, strconv и unicode/utf8
+          - Преобразовывать string, []byte и []rune и знать цену аллокаций
+      - slug: structs
+        title: Structs
+        title_ru: Структуры
+        objectives:
+          - Define structs, use composite literals and anonymous structs
+          - Compare structs and understand which structs are comparable
+          - Use struct tags and know how encoding packages read them
+          - Understand field alignment and the cost of copying large structs
+        objectives_ru:
+          - Объявлять структуры, использовать составные литералы и анонимные структуры
+          - Сравнивать структуры и понимать, какие из них сравнимы
+          - Использовать теги полей и знать, как их читают пакеты кодирования
+          - Понимать выравнивание полей и цену копирования больших структур
+      - slug: pointers
+        title: Pointers
+        title_ru: Указатели
+        objectives:
+          - Use & and * correctly and know there is no pointer arithmetic
+          - Decide when to pass a pointer versus a value
+          - Understand that new and & on composite literals allocate and escape analysis decides stack vs heap
+          - Avoid nil pointer dereferences
+        objectives_ru:
+          - Правильно использовать & и * и знать, что арифметики указателей нет
+          - Решать, когда передавать указатель, а когда значение
+          - Понимать, что new и & на составных литералах выделяют память, а escape-анализ решает, стек это или куча
+          - Избегать разыменования nil-указателей
+
+  - slug: abstractions
+    title: Types and abstractions
+    title_ru: Типы и абстракции
+    topics:
+      - slug: methods
+        title: Methods and receivers
+        title_ru: Методы и получатели
+        objectives:
+          - Define methods on named types and choose between value and pointer receivers
+          - Understand method sets and why they matter for interface satisfaction
+          - Use method values and method expressions
+          - Keep receiver kinds consistent within a type
+        objectives_ru:
+          - Объявлять методы на именованных типах и выбирать между получателем-значением и получателем-указателем
+          - Понимать наборы методов и их роль в реализации интерфейсов
+          - Использовать значения методов и выражения методов
+          - Держать вид получателя единообразным в пределах типа
+      - slug: interfaces
+        title: Interfaces
+        title_ru: Интерфейсы
+        objectives:
+          - Understand implicit interface satisfaction and small interfaces such as io.Reader
+          - Use type assertions and type switches safely
+          - Explain the nil interface versus interface holding a nil pointer gotcha
+          - Apply "accept interfaces, return structs" and define interfaces at the consumer side
+        objectives_ru:
+          - Понимать неявную реализацию интерфейсов и маленькие интерфейсы вроде io.Reader
+          - Безопасно использовать утверждения типа и type switch
+          - Объяснять ловушку nil-интерфейса и интерфейса, содержащего nil-указатель
+          - Применять принцип «принимай интерфейсы, возвращай структуры» и объявлять интерфейсы на стороне потребителя
+      - slug: embedding
+        title: Embedding and composition
+        title_ru: Встраивание и композиция
+        objectives:
+          - Embed structs and interfaces and understand field and method promotion
+          - Resolve name conflicts between promoted members
+          - Prefer composition over inheritance-style designs
+          - Know the pitfalls of embedding types like sync.Mutex in exported structs
+        objectives_ru:
+          - Встраивать структуры и интерфейсы и понимать продвижение полей и методов
+          - Разрешать конфликты имён между продвинутыми членами
+          - Предпочитать композицию дизайну в стиле наследования
+          - Знать подводные камни встраивания типов вроде sync.Mutex в экспортируемые структуры
+      - slug: generics
+        title: Generics
+        title_ru: Дженерики
+        objectives:
+          - Write generic functions and types with type parameters
+          - Define constraints with interfaces, type sets and the ~ operator
+          - Use comparable, any and the cmp package
+          - Know when generics help and when an interface or plain code is better
+        objectives_ru:
+          - Писать обобщённые функции и типы с параметрами типов
+          - Задавать ограничения через интерфейсы, наборы типов и оператор ~
+          - Использовать comparable, any и пакет cmp
+          - Понимать, когда дженерики помогают, а когда лучше интерфейс или обычный код
+
+  - slug: errors
+    title: Error handling
+    title_ru: Обработка ошибок
+    topics:
+      - slug: errors
+        title: Errors as values
+        title_ru: Ошибки как значения
+        objectives:
+          - Return and check errors idiomatically
+          - Wrap errors with %w and inspect them with errors.Is and errors.As
+          - Choose between sentinel errors, custom error types and opaque errors
+          - Use errors.Join and avoid both logging and returning the same error
+        objectives_ru:
+          - Идиоматично возвращать и проверять ошибки
+          - Оборачивать ошибки через %w и проверять их с errors.Is и errors.As
+          - Выбирать между sentinel-ошибками, собственными типами ошибок и непрозрачными ошибками
+          - Использовать errors.Join и не логировать ошибку одновременно с её возвратом
+      - slug: panic-recover
+        title: Panic, recover and defer
+        title_ru: Panic, recover и defer
+        objectives:
+          - Know when panicking is appropriate and when it is not
+          - Recover from panics in deferred functions and understand its limits across goroutines
+          - Use defer for cleanup and modify named results from a deferred function
+          - Understand the runtime cost and semantics of defer
+        objectives_ru:
+          - Знать, когда паника уместна, а когда нет
+          - Восстанавливаться после паники в отложенных функциях и понимать ограничения между горутинами
+          - Использовать defer для очистки и менять именованные результаты из отложенной функции
+          - Понимать цену и семантику defer во время выполнения
+
+  - slug: concurrency
+    title: Concurrency
+    title_ru: Конкурентность
+    topics:
+      - slug: goroutines
+        title: Goroutines
+        title_ru: Горутины
+        objectives:
+          - Start goroutines and understand they are cheap but not free
+          - Wait for goroutines with sync.WaitGroup, including WaitGroup.Go
+          - Avoid goroutine leaks by always having an exit path
+          - Understand GOMAXPROCS and the basics of the scheduler
+        objectives_ru:
+          - Запускать горутины и понимать, что они дешёвые, но не бесплатные
+          - Дожидаться горутин через sync.WaitGroup, включая WaitGroup.Go
+          - Избегать утечек горутин, всегда оставляя путь выхода
+          - Понимать GOMAXPROCS и основы планировщика
+      - slug: channels
+        title: Channels
+        title_ru: Каналы
+        objectives:
+          - Use unbuffered and buffered channels and understand their synchronisation guarantees
+          - Close channels correctly and range over them
+          - Use directional channel types in function signatures
+          - Know what happens on send/receive/close for nil and closed channels
+        objectives_ru:
+          - Использовать небуферизованные и буферизованные каналы и понимать их гарантии синхронизации
+          - Правильно закрывать каналы и обходить их через range
+          - Использовать направленные типы каналов в сигнатурах функций
+          - Знать, что происходит при отправке, получении и закрытии для nil- и закрытых каналов
+      - slug: select
+        title: Select and timeouts
+        title_ru: Select и таймауты
+        objectives:
+          - Multiplex channel operations with select
+          - Implement timeouts with time.After and time.NewTimer
+          - Use default for non-blocking operations
+          - Disable select cases by setting channels to nil
+        objectives_ru:
+          - Мультиплексировать операции с каналами через select
+          - Реализовывать таймауты через time.After и time.NewTimer
+          - Использовать default для неблокирующих операций
+          - Отключать ветки select, присваивая каналам nil
+      - slug: sync
+        title: Sync primitives and atomics
+        title_ru: Примитивы синхронизации и атомики
+        objectives:
+          - Protect shared state with sync.Mutex and sync.RWMutex
+          - Use sync.Once, sync.OnceValue and sync.Pool appropriately
+          - Use sync/atomic types for simple counters and flags
+          - Choose between channels and mutexes for a given problem
+        objectives_ru:
+          - Защищать общее состояние через sync.Mutex и sync.RWMutex
+          - Уместно использовать sync.Once, sync.OnceValue и sync.Pool
+          - Использовать типы из sync/atomic для простых счётчиков и флагов
+          - Выбирать между каналами и мьютексами для конкретной задачи
+      - slug: context
+        title: Context
+        title_ru: Context
+        objectives:
+          - Propagate cancellation and deadlines with context.Context
+          - Use WithCancel, WithTimeout, WithDeadline and WithCancelCause
+          - Follow context conventions (first parameter, never stored in structs, request-scoped values only)
+          - Stop work promptly when ctx.Done() is closed
+        objectives_ru:
+          - Передавать отмену и дедлайны через context.Context
+          - Использовать WithCancel, WithTimeout, WithDeadline и WithCancelCause
+          - Соблюдать соглашения (первый параметр, не хранить в структурах, только значения уровня запроса)
+          - Быстро прекращать работу, когда закрыт ctx.Done()
+      - slug: concurrency-patterns
+        title: Concurrency patterns
+        title_ru: Паттерны конкурентности
+        objectives:
+          - Build worker pools, pipelines and fan-out/fan-in
+          - Use errgroup to run goroutines with error propagation and cancellation
+          - Bound concurrency with semaphores
+          - Implement graceful shutdown of concurrent components
+        objectives_ru:
+          - Строить пулы воркеров, конвейеры и fan-out/fan-in
+          - Запускать горутины через errgroup с передачей ошибок и отменой
+          - Ограничивать конкурентность семафорами
+          - Реализовывать корректную остановку конкурентных компонентов
+      - slug: race-conditions
+        title: Data races and the memory model
+        title_ru: Гонки данных и модель памяти
+        objectives:
+          - Recognise data races and detect them with the -race flag
+          - Understand happens-before relationships in the Go memory model
+          - Know why maps and slices are not safe for concurrent mutation
+          - Fix common race patterns in closures and loops
+        objectives_ru:
+          - Распознавать гонки данных и находить их флагом -race
+          - Понимать отношения happens-before в модели памяти Go
+          - Знать, почему мапы и слайсы небезопасны для конкурентного изменения
+          - Исправлять типичные гонки в замыканиях и циклах
+
+  - slug: practice
+    title: Standard library and practice
+    title_ru: Стандартная библиотека и практика
+    topics:
+      - slug: testing
+        title: Testing
+        title_ru: Тестирование
+        objectives:
+          - Write table-driven tests with subtests and t.Run
+          - Use t.Helper, t.Cleanup, t.Parallel and t.Context
+          - Write benchmarks with b.Loop and fuzz tests
+          - Use httptest and test fixtures in testdata/
+        objectives_ru:
+          - Писать табличные тесты с подтестами и t.Run
+          - Использовать t.Helper, t.Cleanup, t.Parallel и t.Context
+          - Писать бенчмарки с b.Loop и фаззинг-тесты
+          - Использовать httptest и фикстуры в testdata/
+      - slug: io
+        title: io.Reader, io.Writer and files
+        title_ru: io.Reader, io.Writer и файлы
+        objectives:
+          - Compose io.Reader and io.Writer implementations
+          - Use bufio, io.Copy, io.MultiWriter and io.TeeReader
+          - Read and write files with os and handle Close errors
+          - Work with the io/fs abstraction and embed
+        objectives_ru:
+          - Комбинировать реализации io.Reader и io.Writer
+          - Использовать bufio, io.Copy, io.MultiWriter и io.TeeReader
+          - Читать и писать файлы через os и обрабатывать ошибки Close
+          - Работать с абстракцией io/fs и embed
+      - slug: json
+        title: Encoding and JSON
+        title_ru: Кодирование и JSON
+        objectives:
+          - Marshal and unmarshal JSON with struct tags and omitempty/omitzero
+          - Handle unknown or dynamic JSON with json.RawMessage and maps
+          - Implement custom Marshaler and Unmarshaler
+          - Stream large JSON with Encoder and Decoder
+        objectives_ru:
+          - Сериализовать и десериализовать JSON с тегами полей и omitempty/omitzero
+          - Обрабатывать неизвестный или динамический JSON через json.RawMessage и мапы
+          - Реализовывать собственные Marshaler и Unmarshaler
+          - Потоково обрабатывать большой JSON через Encoder и Decoder
+      - slug: net-http
+        title: HTTP servers and clients
+        title_ru: HTTP-серверы и клиенты
+        objectives:
+          - Build HTTP servers with net/http and the method/path patterns of ServeMux
+          - Write middleware and handle request context
+          - Configure http.Client timeouts and always close response bodies
+          - Shut down servers gracefully
+        objectives_ru:
+          - Строить HTTP-серверы на net/http с шаблонами метод/путь в ServeMux
+          - Писать middleware и работать с контекстом запроса
+          - Настраивать таймауты http.Client и всегда закрывать тела ответов
+          - Корректно останавливать серверы
+      - slug: iterators
+        title: Iterators
+        title_ru: Итераторы
+        objectives:
+          - Write push iterators with iter.Seq and iter.Seq2
+          - Range over functions and understand yield semantics and early exit
+          - Convert iterators to pull style with iter.Pull
+          - Use iterator helpers in slices and maps
+        objectives_ru:
+          - Писать push-итераторы через iter.Seq и iter.Seq2
+          - Обходить функции через range и понимать семантику yield и досрочного выхода
+          - Превращать итераторы в pull-стиль через iter.Pull
+          - Использовать вспомогательные итераторы из slices и maps
+      - slug: time
+        title: Time and timers
+        title_ru: Время и таймеры
+        objectives:
+          - Work with time.Time, time.Duration and time zones
+          - Format and parse times with reference layouts
+          - Use tickers and timers without leaking them
+          - Understand monotonic clock readings
+        objectives_ru:
+          - Работать с time.Time, time.Duration и часовыми поясами
+          - Форматировать и разбирать время по эталонным шаблонам
+          - Использовать тикеры и таймеры без утечек
+          - Понимать показания монотонных часов
+
+  - slug: internals
+    title: Internals and performance
+    title_ru: Внутреннее устройство и производительность
+    topics:
+      - slug: memory
+        title: Memory, escape analysis and GC
+        title_ru: Память, escape-анализ и GC
+        objectives:
+          - Understand stack versus heap allocation and read escape analysis output
+          - Reduce allocations with preallocation and reuse
+          - Understand the basics of the garbage collector, GOGC and GOMEMLIMIT
+          - Know how slices, maps and interfaces affect allocations
+        objectives_ru:
+          - Понимать выделение на стеке и в куче и читать вывод escape-анализа
+          - Сокращать аллокации предвыделением и переиспользованием
+          - Понимать основы сборщика мусора, GOGC и GOMEMLIMIT
+          - Знать, как слайсы, мапы и интерфейсы влияют на аллокации
+      - slug: profiling
+        title: Profiling and optimisation
+        title_ru: Профилирование и оптимизация
+        objectives:
+          - Collect CPU and memory profiles with pprof
+          - Read flame graphs and benchmark results with benchstat
+          - Use the execution tracer for latency problems
+          - Apply profile-guided optimisation
+        objectives_ru:
+          - Снимать профили CPU и памяти через pprof
+          - Читать flame graph и сравнивать бенчмарки через benchstat
+          - Использовать трассировщик выполнения для проблем с задержками
+          - Применять оптимизацию по профилю (PGO)
+      - slug: reflection
+        title: Reflection and unsafe
+        title_ru: Рефлексия и unsafe
+        objectives:
+          - Inspect types and values with the reflect package
+          - Understand the laws of reflection and settability
+          - Know why reflection is slow and when to avoid it
+          - Understand what unsafe allows and why it is rarely needed
+        objectives_ru:
+          - Исследовать типы и значения через пакет reflect
+          - Понимать законы рефлексии и settability
+          - Знать, почему рефлексия медленная и когда её избегать
+          - Понимать, что позволяет unsafe и почему он нужен редко

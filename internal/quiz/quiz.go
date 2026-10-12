@@ -1,0 +1,410 @@
+package quiz
+
+import (
+	"context"
+	"database/sql"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"log/slog"
+	"net/http"
+	"sync"
+	"time"
+
+	"github.com/raiden0456/gonteractive/internal/curriculum"
+	"github.com/raiden0456/gonteractive/internal/httpx"
+	"github.com/raiden0456/gonteractive/internal/progress"
+	"github.com/raiden0456/gonteractive/internal/providers"
+	"github.com/raiden0456/gonteractive/internal/settings"
+	"github.com/raiden0456/gonteractive/internal/store"
+	"github.com/raiden0456/gonteractive/internal/store/db"
+)
+
+type Kind string
+
+const (
+	KindSingle Kind = "single_choice"
+	KindMulti  Kind = "multi_choice"
+	KindOpen   Kind = "open"
+)
+
+const (
+	quizTopic  = "topic"
+	quizReview = "review"
+	quizDaily  = "daily"
+)
+
+type Response struct {
+	Selected []int  `json:"selected,omitempty"`
+	Text     string `json:"text,omitempty"`
+}
+
+type Result struct {
+	Response        Response `json:"response"`
+	Score           float64  `json:"score"`
+	Correct         bool     `json:"correct"`
+	Feedback        string   `json:"feedback"`
+	Explanation     string   `json:"explanation"`
+	CorrectOptions  []int    `json:"correctOptions"`
+	ReferenceAnswer string   `json:"referenceAnswer"`
+}
+
+type QuestionView struct {
+	ID         int64    `json:"id"`
+	TopicSlug  string   `json:"topicSlug"`
+	Kind       Kind     `json:"kind"`
+	Prompt     string   `json:"prompt"`
+	Options    []string `json:"options"`
+	Difficulty int64    `json:"difficulty"`
+	Result     *Result  `json:"result"`
+}
+
+type QuizView struct {
+	ID          int64          `json:"id"`
+	Kind        string         `json:"kind"`
+	TopicSlug   *string        `json:"topicSlug"`
+	DailyDate   *string        `json:"dailyDate"`
+	CreatedAt   int64          `json:"createdAt"`
+	CompletedAt *int64         `json:"completedAt"`
+	Score       *float64       `json:"score"`
+	Questions   []QuestionView `json:"questions"`
+}
+
+type Summary struct {
+	ID          int64    `json:"id"`
+	Kind        string   `json:"kind"`
+	TopicSlug   *string  `json:"topicSlug"`
+	DailyDate   *string  `json:"dailyDate"`
+	CreatedAt   int64    `json:"createdAt"`
+	CompletedAt *int64   `json:"completedAt"`
+	Total       int64    `json:"total"`
+	Answered    int      `json:"answered"`
+	Score       *float64 `json:"score"`
+}
+
+type Service struct {
+	conn       *sql.DB
+	q          *db.Queries
+	curriculum *curriculum.Curriculum
+	providers  *providers.Service
+	settings   *settings.Store
+	progress   *progress.Service
+}
+
+func New(conn *sql.DB, q *db.Queries, c *curriculum.Curriculum, p *providers.Service, s *settings.Store, prog *progress.Service) *Service {
+	return &Service{conn: conn, q: q, curriculum: c, providers: p, settings: s, progress: prog}
+}
+
+func (s *Service) CreateTopicQuiz(ctx context.Context, slug string, size int) (db.Quiz, error) {
+	topic, err := s.curriculum.Lookup(slug)
+	if err != nil {
+		return db.Quiz{}, err
+	}
+	generated, err := s.generateQuestions(ctx, topic, size)
+	if err != nil {
+		return db.Quiz{}, err
+	}
+	return s.createQuiz(ctx, db.CreateQuizParams{Kind: quizTopic, TopicSlug: nullString(slug)}, nil, map[string][]generatedQuestion{slug: generated})
+}
+
+func (s *Service) CreateReviewQuiz(ctx context.Context, size int) (db.Quiz, error) {
+	due, err := s.q.ListDueQuestionIDs(ctx, db.ListDueQuestionIDsParams{Due: time.Now().Unix(), Limit: int64(size)})
+	if err != nil {
+		return db.Quiz{}, err
+	}
+	if len(due) == 0 {
+		return db.Quiz{}, httpx.Coded(http.StatusConflict, "nothing_due", "nothing is due for review")
+	}
+	return s.createQuiz(ctx, db.CreateQuizParams{Kind: quizReview}, due, nil)
+}
+
+// CreateDailyQuiz fills the quiz with due reviews first and tops it up with fresh questions on the
+// learner's weakest topics. It is idempotent per date; generation failures are tolerated as long as
+// at least one question ends up in the quiz.
+func (s *Service) CreateDailyQuiz(ctx context.Context, date string, size int) (db.Quiz, error) {
+	if existing, err := s.q.GetDailyQuiz(ctx, nullString(date)); err == nil {
+		return existing, nil
+	} else if !errors.Is(err, sql.ErrNoRows) {
+		return db.Quiz{}, err
+	}
+
+	due, err := s.q.ListDueQuestionIDs(ctx, db.ListDueQuestionIDsParams{Due: time.Now().Unix(), Limit: int64(size)})
+	if err != nil {
+		return db.Quiz{}, err
+	}
+
+	fresh := map[string][]generatedQuestion{}
+	if remaining := size - len(due); remaining > 0 {
+		topics, err := s.progress.WeakestActiveTopics(ctx, min(2, remaining))
+		if err != nil {
+			return db.Quiz{}, err
+		}
+		results := make([][]generatedQuestion, len(topics))
+		errs := make([]error, len(topics))
+		var wg sync.WaitGroup
+		for i, slug := range topics {
+			n := remaining / len(topics)
+			if i < remaining%len(topics) {
+				n++
+			}
+			topic, _ := s.curriculum.Topic(slug)
+			wg.Go(func() { results[i], errs[i] = s.generateQuestions(ctx, topic, n) })
+		}
+		wg.Wait()
+
+		var genErr error
+		for i, slug := range topics {
+			if errors.Is(errs[i], providers.ErrNotConfigured) {
+				return db.Quiz{}, errs[i]
+			}
+			if errs[i] != nil {
+				genErr = errs[i]
+				slog.Warn("daily quiz: question generation failed", "topic", slug, "err", errs[i])
+				continue
+			}
+			fresh[slug] = results[i]
+		}
+		if len(due) == 0 && len(fresh) == 0 {
+			return db.Quiz{}, fmt.Errorf("daily quiz: no due reviews and generation failed: %w", genErr)
+		}
+	}
+	return s.createQuiz(ctx, db.CreateQuizParams{Kind: quizDaily, DailyDate: nullString(date)}, due, fresh)
+}
+
+func (s *Service) createQuiz(ctx context.Context, params db.CreateQuizParams, existing []int64, fresh map[string][]generatedQuestion) (db.Quiz, error) {
+	var quiz db.Quiz
+	err := store.Tx(ctx, s.conn, func(tx *sql.Tx) error {
+		q := s.q.WithTx(tx)
+		var err error
+		if quiz, err = q.CreateQuiz(ctx, params); err != nil {
+			return err
+		}
+		ids := existing
+		for slug, gqs := range fresh {
+			for _, gq := range gqs {
+				options, _ := json.Marshal(gq.Options)
+				correct, _ := json.Marshal(gq.Correct)
+				row, err := q.CreateQuestion(ctx, db.CreateQuestionParams{
+					TopicSlug:       slug,
+					Kind:            string(gq.Kind),
+					Prompt:          gq.Prompt,
+					Options:         string(options),
+					Correct:         string(correct),
+					ReferenceAnswer: gq.ReferenceAnswer,
+					Explanation:     gq.Explanation,
+					Difficulty:      int64(gq.Difficulty),
+				})
+				if err != nil {
+					return err
+				}
+				ids = append(ids, row.ID)
+			}
+		}
+		for i, id := range ids {
+			if err := q.AddQuizItem(ctx, db.AddQuizItemParams{QuizID: quiz.ID, Position: int64(i), QuestionID: id}); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	return quiz, err
+}
+
+func (s *Service) View(ctx context.Context, id int64) (QuizView, error) {
+	quiz, err := s.q.GetQuiz(ctx, id)
+	if err != nil {
+		return QuizView{}, err
+	}
+	questions, err := s.q.ListQuizQuestions(ctx, id)
+	if err != nil {
+		return QuizView{}, err
+	}
+	answers, err := s.q.ListQuizAnswers(ctx, sql.NullInt64{Int64: id, Valid: true})
+	if err != nil {
+		return QuizView{}, err
+	}
+	byQuestion := map[int64]db.Answer{}
+	for _, a := range answers {
+		byQuestion[a.QuestionID] = a
+	}
+
+	view := QuizView{
+		ID:          quiz.ID,
+		Kind:        quiz.Kind,
+		TopicSlug:   ptrString(quiz.TopicSlug),
+		DailyDate:   ptrString(quiz.DailyDate),
+		CreatedAt:   quiz.CreatedAt,
+		CompletedAt: ptrInt(quiz.CompletedAt),
+		Score:       averageScore(answers),
+	}
+	for _, q := range questions {
+		qv := QuestionView{ID: q.ID, TopicSlug: q.TopicSlug, Kind: Kind(q.Kind), Prompt: q.Prompt, Difficulty: q.Difficulty}
+		if err := json.Unmarshal([]byte(q.Options), &qv.Options); err != nil {
+			return QuizView{}, err
+		}
+		if a, ok := byQuestion[q.ID]; ok {
+			res, err := result(q, a)
+			if err != nil {
+				return QuizView{}, err
+			}
+			qv.Result = &res
+		}
+		view.Questions = append(view.Questions, qv)
+	}
+	return view, nil
+}
+
+func (s *Service) Answer(ctx context.Context, quizID, questionID int64, resp Response) (Result, bool, error) {
+	quiz, err := s.q.GetQuiz(ctx, quizID)
+	if err != nil {
+		return Result{}, false, err
+	}
+	questions, err := s.q.ListQuizQuestions(ctx, quizID)
+	if err != nil {
+		return Result{}, false, err
+	}
+	var question *db.Question
+	for i := range questions {
+		if questions[i].ID == questionID {
+			question = &questions[i]
+		}
+	}
+	if question == nil {
+		return Result{}, false, httpx.Errorf(http.StatusBadRequest, "question %d is not part of quiz %d", questionID, quizID)
+	}
+	answers, err := s.q.ListQuizAnswers(ctx, sql.NullInt64{Int64: quizID, Valid: true})
+	if err != nil {
+		return Result{}, false, err
+	}
+	for _, a := range answers {
+		if a.QuestionID == questionID {
+			return Result{}, false, httpx.Coded(http.StatusConflict, "already_answered", "question already answered")
+		}
+	}
+
+	var (
+		score    float64
+		feedback string
+	)
+	if Kind(question.Kind) == KindOpen {
+		resp.Selected = nil
+		g, err := s.gradeOpen(ctx, *question, resp.Text)
+		if err != nil {
+			return Result{}, false, err
+		}
+		score, feedback = g.Score, g.Feedback
+	} else {
+		resp.Text = ""
+		if score, err = gradeChoice(*question, resp.Selected); err != nil {
+			return Result{}, false, err
+		}
+	}
+
+	rawResp, _ := json.Marshal(resp)
+	var answer db.Answer
+	completed := false
+	err = store.Tx(ctx, s.conn, func(tx *sql.Tx) error {
+		q := s.q.WithTx(tx)
+		var err error
+		answer, err = q.CreateAnswer(ctx, db.CreateAnswerParams{
+			QuestionID: questionID,
+			QuizID:     sql.NullInt64{Int64: quiz.ID, Valid: true},
+			Response:   string(rawResp),
+			Score:      score,
+			Feedback:   feedback,
+		})
+		if err != nil {
+			return err
+		}
+		if err := s.progress.Review(ctx, q, questionID, score, time.Now()); err != nil {
+			return err
+		}
+		if len(answers)+1 == len(questions) {
+			completed = true
+			return q.CompleteQuiz(ctx, quiz.ID)
+		}
+		return nil
+	})
+	if err != nil {
+		return Result{}, false, err
+	}
+	res, err := result(*question, answer)
+	return res, completed, err
+}
+
+func (s *Service) Recent(ctx context.Context, limit int64) ([]Summary, error) {
+	quizzes, err := s.q.ListRecentQuizzes(ctx, limit)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]Summary, 0, len(quizzes))
+	for _, quiz := range quizzes {
+		total, err := s.q.CountQuizItems(ctx, quiz.ID)
+		if err != nil {
+			return nil, err
+		}
+		answers, err := s.q.ListQuizAnswers(ctx, sql.NullInt64{Int64: quiz.ID, Valid: true})
+		if err != nil {
+			return nil, err
+		}
+		out = append(out, Summary{
+			ID:          quiz.ID,
+			Kind:        quiz.Kind,
+			TopicSlug:   ptrString(quiz.TopicSlug),
+			DailyDate:   ptrString(quiz.DailyDate),
+			CreatedAt:   quiz.CreatedAt,
+			CompletedAt: ptrInt(quiz.CompletedAt),
+			Total:       total,
+			Answered:    len(answers),
+			Score:       averageScore(answers),
+		})
+	}
+	return out, nil
+}
+
+func result(q db.Question, a db.Answer) (Result, error) {
+	res := Result{
+		Score:           a.Score,
+		Correct:         a.Score >= progress.PassScore,
+		Feedback:        a.Feedback,
+		Explanation:     q.Explanation,
+		ReferenceAnswer: q.ReferenceAnswer,
+	}
+	if err := json.Unmarshal([]byte(a.Response), &res.Response); err != nil {
+		return res, err
+	}
+	if err := json.Unmarshal([]byte(q.Correct), &res.CorrectOptions); err != nil {
+		return res, err
+	}
+	return res, nil
+}
+
+func averageScore(answers []db.Answer) *float64 {
+	if len(answers) == 0 {
+		return nil
+	}
+	var total float64
+	for _, a := range answers {
+		total += a.Score
+	}
+	avg := total / float64(len(answers))
+	return &avg
+}
+
+func nullString(s string) sql.NullString {
+	return sql.NullString{String: s, Valid: s != ""}
+}
+
+func ptrString(s sql.NullString) *string {
+	if !s.Valid {
+		return nil
+	}
+	return &s.String
+}
+
+func ptrInt(n sql.NullInt64) *int64 {
+	if !n.Valid {
+		return nil
+	}
+	return &n.Int64
+}
