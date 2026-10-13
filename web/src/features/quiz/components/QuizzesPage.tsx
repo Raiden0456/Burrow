@@ -9,7 +9,7 @@ export function QuizzesPage() {
     <>
       <PageHeader title={t("quizzes.title")} description={t("quizzes.description")} />
       <Tabs defaultValue="open">
-        <TabsList>
+        <TabsList className="max-md:w-full">
           <TabsTrigger value="open">{t("quizzes.open")}</TabsTrigger>
           <TabsTrigger value="done">{t("quizzes.done")}</TabsTrigger>
         </TabsList>

@@ -64,7 +64,7 @@ export function LessonPanel({ slug }: { slug: string }) {
       ) : (
         <div className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-hue-blue/40 bg-hue-blue/5 p-6">
           <p className="text-sm text-muted-foreground">{t("topics.lesson.empty")}</p>
-          <Button onClick={start} disabled={generate.isPending}>
+          <Button onClick={start} disabled={generate.isPending} className="max-md:w-full">
             <SparklesIcon />
             {t("topics.lesson.generate")}
           </Button>

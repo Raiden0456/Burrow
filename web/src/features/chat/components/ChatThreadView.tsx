@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react"
-import { useLocation, useNavigate } from "react-router"
-import { Loader2Icon } from "lucide-react"
+import { Link, useLocation, useNavigate } from "react-router"
+import { ChevronLeftIcon, Loader2Icon } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { ErrorAlert } from "@/components/ErrorAlert"
 import { PageLoader } from "@/components/PageLoader"
 import { useI18n } from "@/i18n"
@@ -33,8 +34,15 @@ export function ChatThreadView({ id }: { id: number }) {
   if (thread.error) return <ErrorAlert error={thread.error} />
 
   return (
-    <div className="flex min-h-[calc(100svh-10rem)] flex-col md:min-h-[calc(100svh-3rem)]">
-      <h2 className="mb-4 truncate text-lg font-semibold">{thread.data.thread.title || t("chat.newChat")}</h2>
+    <div className="flex min-h-[calc(100svh-6rem)] flex-col max-md:pb-24 md:min-h-[calc(100svh-3rem)]">
+      <div className="sticky top-0 z-30 -mx-4 mb-4 flex items-center gap-1 bg-background/95 px-2 py-2 backdrop-blur md:static md:mx-0 md:bg-transparent md:p-0 md:backdrop-blur-none">
+        <Button asChild variant="ghost" size="icon" className="md:hidden" aria-label={t("chat.all")}>
+          <Link to="/chat">
+            <ChevronLeftIcon />
+          </Link>
+        </Button>
+        <h2 className="min-w-0 truncate text-lg font-semibold">{thread.data.thread.title || t("chat.newChat")}</h2>
+      </div>
       {thread.data.thread.context && (
         <details className="mb-4 rounded-lg border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
           <summary className="cursor-pointer select-none">{t("chat.context")}</summary>
@@ -57,7 +65,7 @@ export function ChatThreadView({ id }: { id: number }) {
         {count === 0 && !streaming && <p className="text-sm text-muted-foreground">{t("chat.empty")}</p>}
         <div ref={bottom} />
       </div>
-      <div className="sticky bottom-16 mt-4 bg-background pt-2 pb-2 md:bottom-0 md:pb-4">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur md:sticky md:mt-4 md:border-0 md:bg-background md:px-0 md:pt-2 md:pb-4 md:backdrop-blur-none">
         <Composer disabled={streaming} onSend={send} />
       </div>
     </div>

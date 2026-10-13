@@ -60,7 +60,7 @@ export function PushCard() {
           </CardDescription>
         </div>
       </CardHeader>
-      <CardContent className="flex flex-wrap gap-2">
+      <CardContent className="flex flex-wrap gap-2 max-md:flex-col">
         {endpoint ? (
           <Button variant="outline" onClick={() => disable.mutate()} disabled={disable.isPending}>
             <BellOffIcon />

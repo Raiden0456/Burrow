@@ -48,7 +48,7 @@ export function HintsPanel({ quizId, question }: { quizId: number; question: Que
       )}
       {stream.error && <ErrorAlert error={stream.error} />}
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 max-md:flex-col">
         {!answered && hints.length < maxHints && (
           <Button variant="outline" size="sm" disabled={busy} onClick={() => stream.start("hint")} className="border-hue-yellow/40 text-hue-yellow hover:bg-hue-yellow/10 hover:text-hue-yellow">
             {busy ? <Loader2Icon className="animate-spin" /> : <LightbulbIcon />}

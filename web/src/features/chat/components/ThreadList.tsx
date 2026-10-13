@@ -24,6 +24,7 @@ export function ThreadList({ activeId }: { activeId?: number }) {
 
   return (
     <div className="flex flex-col gap-2">
+      <h1 className="mb-1 text-xl font-semibold md:hidden">{t("nav.chat")}</h1>
       <Button onClick={() => startChat.mutate({})} disabled={startChat.isPending}>
         <PlusIcon />
         {t("chat.newChat")}

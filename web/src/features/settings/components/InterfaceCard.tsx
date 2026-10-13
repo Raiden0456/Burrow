@@ -35,7 +35,7 @@ export function InterfaceCard() {
       <CardContent className="flex flex-col gap-5">
         <div className="flex flex-col gap-2">
           <Label>{t("settings.interface.theme")}</Label>
-          <div className="flex w-fit flex-wrap gap-1 rounded-lg border p-1">
+          <div className="flex w-fit flex-wrap gap-1 rounded-lg border p-1 max-md:grid max-md:w-full max-md:grid-cols-3">
             {themes.map(({ value, label, icon: Icon }) => (
               <Button key={value} size="sm" variant={theme === value ? "secondary" : "ghost"} onClick={() => setTheme(value)}>
                 <Icon />
@@ -49,7 +49,7 @@ export function InterfaceCard() {
             <LanguagesIcon className="size-4" />
             {t("settings.interface.language")}
           </Label>
-          <div className="flex w-fit gap-1 rounded-lg border p-1">
+          <div className="flex w-fit gap-1 rounded-lg border p-1 max-md:grid max-md:w-full max-md:grid-cols-2">
             {locales.map((l) => (
               <Button key={l} size="sm" variant={locale === l ? "secondary" : "ghost"} onClick={() => changeLanguage.mutate(l)}>
                 {languageNames[l]}
@@ -58,7 +58,7 @@ export function InterfaceCard() {
           </div>
         </div>
         <div>
-          <Button variant="outline" onClick={() => logout.mutate()}>
+          <Button variant="outline" onClick={() => logout.mutate()} className="max-md:w-full">
             <LogOutIcon />
             {t("settings.interface.signOut")}
           </Button>

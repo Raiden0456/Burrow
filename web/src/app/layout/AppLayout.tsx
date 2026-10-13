@@ -1,6 +1,7 @@
 import { NavLink, Outlet } from "react-router"
 import { JobsIndicator, JobsWatcher } from "@/features/jobs"
 import { useInterfaceSync } from "@/features/settings"
+import { useFocusMode } from "@/hooks/useFocusMode"
 import { useI18n } from "@/i18n"
 import { cn } from "@/lib/utils"
 import { RequireAuth } from "./RequireAuth"
@@ -8,6 +9,7 @@ import { navItems } from "./navItems"
 
 function Shell() {
   const { t } = useI18n()
+  const focus = useFocusMode()
   useInterfaceSync()
 
   return (
@@ -37,26 +39,29 @@ function Shell() {
       </aside>
       <JobsWatcher />
 
-      <main className="min-w-0 flex-1 pb-20 md:pb-0">
-        <div className="mx-auto w-full max-w-5xl px-4 py-6 md:px-8">
-          <JobsIndicator className="mb-4 md:hidden" />
+      <main className={cn("min-w-0 flex-1 md:pb-0", focus ? "pb-0" : "pb-24")}>
+        <div className={cn("mx-auto w-full max-w-5xl px-4 md:px-8 md:py-6", focus ? "pt-2 pb-4" : "py-5")}>
+          {!focus && <JobsIndicator className="mb-4 md:hidden" />}
           <Outlet />
         </div>
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
-        {navItems.map(({ to, label, icon: Icon, end }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={end}
-            className={({ isActive }) => cn("flex flex-col items-center gap-0.5 py-2 text-[11px] text-muted-foreground", isActive && "text-primary")}
-          >
-            <Icon className="size-5" />
-            {t(label)}
-          </NavLink>
-        ))}
-      </nav>
+      {!focus && (
+        <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
+          {navItems.map(({ to, label, icon: Icon, end }) => (
+            <NavLink key={to} to={to} end={end} className="flex flex-col items-center gap-1 pt-2 pb-2 text-[11px] font-medium text-muted-foreground">
+              {({ isActive }) => (
+                <>
+                  <span className={cn("flex h-8 w-14 items-center justify-center rounded-full transition-colors", isActive && "bg-primary/15 text-primary")}>
+                    <Icon className="size-[22px]" />
+                  </span>
+                  <span className={cn(isActive && "text-foreground")}>{t(label)}</span>
+                </>
+              )}
+            </NavLink>
+          ))}
+        </nav>
+      )}
     </div>
   )
 }

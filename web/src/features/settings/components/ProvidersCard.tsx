@@ -63,31 +63,41 @@ export function ProvidersCard() {
         {providers.isPending && <Skeleton className="h-12 w-full" />}
         {providers.data?.length === 0 && <p className="text-sm text-muted-foreground">{t("settings.providers.empty")}</p>}
         {providers.data?.map((p) => (
-          <div key={p.id} className="flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2">
+          <div key={p.id} className="flex flex-col gap-3 rounded-lg border px-3 py-3 sm:flex-row sm:items-center sm:gap-2 sm:py-2">
             <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2 font-medium">
-                {p.name}
-                <Badge className={cn("border-transparent", toneChip[kindTone[p.kind]])}>{t(kindLabels[p.kind])}</Badge>
+              <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 font-medium">
+                <span className="min-w-0 truncate">{p.name}</span>
+                <Badge className={cn("max-w-full shrink border-transparent", toneChip[kindTone[p.kind]])}>
+                  <span className="truncate">{t(kindLabels[p.kind])}</span>
+                </Badge>
               </div>
-              <div className="truncate font-mono text-xs text-muted-foreground">
+              <div className="mt-1 truncate font-mono text-xs text-muted-foreground">
                 {p.kind === "acp" ? [p.command, ...(p.args ?? [])].join(" ") : p.model || t("settings.providers.defaultModel")}
               </div>
             </div>
-            <Button size="sm" variant="outline" onClick={() => test.mutate(p.id)} disabled={test.isPending && test.variables === p.id}>
-              {test.isPending && test.variables === p.id ? <Loader2Icon className="animate-spin" /> : <PlugZapIcon />}
-              {t("settings.providers.test")}
-            </Button>
-            <Button size="icon-sm" variant="ghost" aria-label={t("settings.providers.edit")} onClick={() => openDialog(p)}>
-              <PencilIcon />
-            </Button>
-            <Button
-              size="icon-sm"
-              variant="ghost"
-              aria-label={t("settings.providers.delete")}
-              onClick={() => confirm(t("settings.providers.deleteConfirm", { name: p.name })) && remove.mutate(p.id)}
-            >
-              <Trash2Icon />
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="max-sm:flex-1"
+                onClick={() => test.mutate(p.id)}
+                disabled={test.isPending && test.variables === p.id}
+              >
+                {test.isPending && test.variables === p.id ? <Loader2Icon className="animate-spin" /> : <PlugZapIcon />}
+                {t("settings.providers.test")}
+              </Button>
+              <Button size="icon-sm" variant="outline" aria-label={t("settings.providers.edit")} onClick={() => openDialog(p)}>
+                <PencilIcon />
+              </Button>
+              <Button
+                size="icon-sm"
+                variant="outline"
+                aria-label={t("settings.providers.delete")}
+                onClick={() => confirm(t("settings.providers.deleteConfirm", { name: p.name })) && remove.mutate(p.id)}
+              >
+                <Trash2Icon />
+              </Button>
+            </div>
           </div>
         ))}
       </CardContent>

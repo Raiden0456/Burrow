@@ -58,7 +58,7 @@ export function DrillList({ slug }: { slug: string }) {
       {!!drills.data?.length && (
         <div className="flex flex-col divide-y rounded-lg border">
           {drills.data.map((d) => (
-            <Link key={d.id} to={`/drills/${d.id}`} className="flex items-center gap-3 px-3 py-2.5 text-sm transition-colors hover:bg-muted/60">
+            <Link key={d.id} to={`/drills/${d.id}`} className="flex items-center gap-3 px-3 py-2.5 text-sm transition-colors hover:bg-muted/60 pointer-coarse:py-3.5">
               {d.solved ? <CheckCircle2Icon className="size-4 text-success" /> : <CircleIcon className="size-4 text-muted-foreground" />}
               <span className="min-w-0 flex-1 truncate">{d.title}</span>
               <DifficultyBadge level={d.difficulty} />

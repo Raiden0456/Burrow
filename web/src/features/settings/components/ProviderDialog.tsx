@@ -69,7 +69,7 @@ export function ProviderDialog({ provider, open, onOpenChange }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90svh] overflow-y-auto">
+      <DialogContent className="max-h-[90svh] overflow-y-auto max-sm:pb-0">
         <form onSubmit={submit} className="flex flex-col gap-4">
           <DialogHeader>
             <DialogTitle>{provider ? t("settings.provider.editTitle") : t("settings.provider.addTitle")}</DialogTitle>
@@ -153,7 +153,7 @@ export function ProviderDialog({ provider, open, onOpenChange }: Props) {
             </>
           )}
 
-          <DialogFooter>
+          <DialogFooter className="sticky bottom-0 z-10 bg-popover max-sm:mb-0 max-sm:pb-[max(env(safe-area-inset-bottom),1rem)]">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               {t("common.cancel")}
             </Button>

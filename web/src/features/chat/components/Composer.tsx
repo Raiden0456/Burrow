@@ -31,9 +31,9 @@ export function Composer({ disabled, onSend }: { disabled: boolean; onSend: (tex
         onChange={(e) => setText(e.target.value)}
         onKeyDown={onKeyDown}
         placeholder={t("chat.placeholder")}
-        className="max-h-48 min-h-10 resize-none"
+        className="max-h-48 min-h-10 resize-none pointer-coarse:min-h-11"
       />
-      <Button type="submit" size="icon-lg" disabled={disabled || !text.trim()} aria-label={t("chat.send")}>
+      <Button type="submit" size="icon-lg" className="shrink-0" disabled={disabled || !text.trim()} aria-label={t("chat.send")}>
         <SendIcon />
       </Button>
     </form>

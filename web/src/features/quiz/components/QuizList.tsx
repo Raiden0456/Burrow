@@ -24,7 +24,7 @@ export function QuizList({ filter, empty }: { filter: QuizFilter; empty?: string
           ? (topics.get(q.topicSlug)?.title ?? q.topicSlug)
           : new Date(q.createdAt * 1000).toLocaleDateString(locale, { day: "numeric", month: "long" })
         return (
-          <Link key={q.id} to={`/quiz/${q.id}`} className="flex items-center gap-3 px-3 py-2.5 text-sm transition-colors hover:bg-muted/60">
+          <Link key={q.id} to={`/quiz/${q.id}`} className="flex items-center gap-3 px-3 py-2.5 text-sm transition-colors hover:bg-muted/60 pointer-coarse:py-3.5">
             <QuizKindBadge kind={q.kind} />
             <div className="min-w-0 flex-1">
               <div className="truncate">{title}</div>

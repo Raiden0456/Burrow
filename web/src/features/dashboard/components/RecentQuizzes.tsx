@@ -26,7 +26,7 @@ export function RecentQuizzes() {
       </CardHeader>
       <CardContent className="flex flex-col divide-y">
         {quizzes.data.map((q) => (
-          <Link key={q.id} to={`/quiz/${q.id}`} className="flex items-center gap-3 py-2 text-sm hover:text-primary">
+          <Link key={q.id} to={`/quiz/${q.id}`} className="flex items-center gap-3 py-2 text-sm hover:text-primary pointer-coarse:py-3">
             <QuizKindBadge kind={q.kind} />
             <span className="min-w-0 flex-1 truncate">
               {q.topicSlug ? (topics.get(q.topicSlug)?.title ?? q.topicSlug) : new Date(q.createdAt * 1000).toLocaleDateString(locale, { day: "numeric", month: "long" })}

@@ -33,20 +33,20 @@ export function QuizSummary({ quiz, onReview }: { quiz: Quiz; onReview: (index: 
             const Icon = r?.correct ? CheckCircle2Icon : r && r.score > 0 ? CircleAlertIcon : XCircleIcon
             const color = r?.correct ? "text-success" : r && r.score > 0 ? "text-warning" : "text-destructive"
             return (
-              <button key={q.id} type="button" onClick={() => onReview(i)} className="flex items-start gap-3 px-3 py-2.5 text-left text-sm hover:bg-muted/60">
+              <button key={q.id} type="button" onClick={() => onReview(i)} className="flex items-start gap-3 px-3 py-2.5 text-left text-sm hover:bg-muted/60 pointer-coarse:py-3.5">
                 <Icon className={cn("mt-0.5 size-4 shrink-0", color)} />
                 <span className="line-clamp-2">{q.prompt.replace(/[`*#>]/g, "")}</span>
               </button>
             )
           })}
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 max-md:flex-col">
           {quiz.topicSlug && (
-            <Button asChild variant="outline">
+            <Button asChild variant="outline" size="lg">
               <Link to={`/topics/${quiz.topicSlug}`}>{t("common.backToTopic")}</Link>
             </Button>
           )}
-          <Button asChild>
+          <Button asChild size="lg">
             <Link to="/">{t("quiz.summary.dashboard")}</Link>
           </Button>
         </div>

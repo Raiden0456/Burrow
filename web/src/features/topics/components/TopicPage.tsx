@@ -40,7 +40,7 @@ export function TopicPage() {
         </ul>
       </div>
       <Tabs defaultValue="lesson">
-        <TabsList>
+        <TabsList className="max-md:w-full">
           <TabsTrigger value="lesson">
             <BookOpenTextIcon />
             {t("topics.tab.lesson")}

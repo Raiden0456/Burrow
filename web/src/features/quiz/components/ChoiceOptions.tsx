@@ -27,15 +27,15 @@ export function ChoiceOptions({ question, selected, onToggle }: Props) {
             disabled={!!result}
             onClick={() => onToggle(i)}
             className={cn(
-              "flex items-start gap-3 rounded-lg border px-3 py-2.5 text-left text-sm transition-colors",
+              "flex items-start gap-3 rounded-lg border px-3 py-2.5 text-left text-sm transition-colors pointer-coarse:rounded-xl pointer-coarse:px-4 pointer-coarse:py-3.5 pointer-coarse:text-[15px] pointer-coarse:active:scale-[0.99]",
               !result && "hover:border-primary/50 hover:bg-primary/5",
               !result && isPicked && "border-primary bg-primary/10",
               result && isCorrect && "border-success/60 bg-success/10",
               result && isPicked && !isCorrect && "border-destructive/60 bg-destructive/10",
             )}
           >
-            <Indicator className={cn("mt-0.5 size-4 shrink-0 text-muted-foreground", !result && isPicked && "text-primary")} />
-            <Markdown className="prose-sm min-w-0 flex-1 prose-p:my-0">{option}</Markdown>
+            <Indicator className={cn("mt-0.5 size-4 shrink-0 text-muted-foreground pointer-coarse:size-5", !result && isPicked && "text-primary")} />
+            <Markdown className="prose-sm min-w-0 flex-1 prose-p:my-0 pointer-coarse:text-[15px]">{option}</Markdown>
             {result && isCorrect && <CheckIcon className="mt-0.5 size-4 shrink-0 text-success" />}
             {result && isPicked && !isCorrect && <XIcon className="mt-0.5 size-4 shrink-0 text-destructive" />}
           </button>

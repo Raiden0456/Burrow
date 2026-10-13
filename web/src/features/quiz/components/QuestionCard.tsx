@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { DifficultyBadge } from "@/components/DifficultyBadge"
+import { ActionBar } from "@/components/ActionBar"
 import { Markdown } from "@/components/Markdown"
 import { useI18n } from "@/i18n"
 import { useDraftSaver } from "../hooks/useDraftSaver"
@@ -38,8 +39,20 @@ export function QuestionCard({ quizId, question, topicTitle, submitting, onSubmi
   const canSubmit = question.kind === "open" ? text.trim().length > 0 : selected.length > 0
   const submit = () => canSubmit && onSubmit(response)
 
+  const action = (mobile: boolean) =>
+    answered ? (
+      <Button size={mobile ? "lg" : "default"} className={mobile ? "flex-1" : undefined} onClick={onNext}>
+        {isLast ? t("quiz.seeResults") : t("quiz.next")}
+      </Button>
+    ) : (
+      <Button size={mobile ? "lg" : "default"} className={mobile ? "flex-1" : undefined} onClick={submit} disabled={!canSubmit || submitting}>
+        {submitting && <Loader2Icon className="animate-spin" />}
+        {submitting && question.kind === "open" ? t("quiz.grading") : t("quiz.submit")}
+      </Button>
+    )
+
   return (
-    <Card>
+    <Card className="max-md:gap-5 max-md:bg-transparent max-md:py-0 max-md:shadow-none max-md:ring-0 max-md:[--card-spacing:0px]">
       <CardHeader className="flex flex-wrap gap-2">
         {topicTitle && <Badge variant="outline">{topicTitle}</Badge>}
         <Badge variant="secondary">{t(`quiz.kind.${question.kind}`)}</Badge>
@@ -54,6 +67,7 @@ export function QuestionCard({ quizId, question, topicTitle, submitting, onSubmi
           ) : (
             <Textarea
               rows={6}
+              className="max-md:min-h-40"
               placeholder={t("quiz.placeholder")}
               value={text}
               onChange={(e) => setText(e.target.value)}
@@ -67,16 +81,8 @@ export function QuestionCard({ quizId, question, topicTitle, submitting, onSubmi
         {answered && <AnswerFeedback question={question} />}
         <HintsPanel quizId={quizId} question={question} />
       </CardContent>
-      <CardFooter className="flex justify-end gap-2 border-t pt-4">
-        {answered ? (
-          <Button onClick={onNext}>{isLast ? t("quiz.seeResults") : t("quiz.next")}</Button>
-        ) : (
-          <Button onClick={submit} disabled={!canSubmit || submitting}>
-            {submitting && <Loader2Icon className="animate-spin" />}
-            {submitting && question.kind === "open" ? t("quiz.grading") : t("quiz.submit")}
-          </Button>
-        )}
-      </CardFooter>
+      <CardFooter className="flex justify-end gap-2 border-t pt-4 max-md:hidden">{action(false)}</CardFooter>
+      <ActionBar>{action(true)}</ActionBar>
     </Card>
   )
 }

@@ -53,9 +53,9 @@ export function PracticePanel({ topic }: { topic: Topic }) {
           </div>
         </CardHeader>
         <CardContent className="flex flex-col gap-3">
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 max-md:flex-col max-md:items-stretch">
             <Select value={size} onValueChange={setSize} disabled={generating}>
-              <SelectTrigger className="w-40">
+              <SelectTrigger className="w-40 max-md:w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

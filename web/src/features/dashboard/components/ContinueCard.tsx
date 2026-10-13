@@ -22,7 +22,7 @@ export function ContinueCard({ modules, stats }: { modules: Module[]; stats: Top
       </CardHeader>
       <CardContent className="flex flex-col gap-1">
         {recent.map((s) => (
-          <Link key={s.slug} to={`/topics/${s.slug}`} className="-mx-2 flex flex-col gap-1.5 rounded-md px-2 py-2 hover:bg-muted/60">
+          <Link key={s.slug} to={`/topics/${s.slug}`} className="-mx-2 flex flex-col gap-1.5 rounded-md px-2 py-2 hover:bg-muted/60 pointer-coarse:py-3">
             <span className="text-sm font-medium">{titles.get(s.slug) ?? s.slug}</span>
             <MasteryBar value={s.mastery} />
           </Link>
@@ -30,7 +30,7 @@ export function ContinueCard({ modules, stats }: { modules: Module[]; stats: Top
         {next && (
           <Link
             to={`/topics/${next.slug}`}
-            className="-mx-2 mt-1 flex items-center justify-between gap-2 rounded-md bg-hue-purple/10 px-3 py-2.5 text-sm transition-colors hover:bg-hue-purple/15"
+            className="-mx-2 mt-1 flex items-center justify-between gap-2 rounded-md bg-hue-purple/10 px-3 py-2.5 text-sm pointer-coarse:rounded-xl pointer-coarse:py-3.5 transition-colors hover:bg-hue-purple/15"
           >
             <span>
               <span className="text-muted-foreground">{t("dashboard.continue.next")}: </span>

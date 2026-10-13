@@ -26,7 +26,7 @@ export function ReviewCard({ due }: { due: number }) {
         </div>
       </CardHeader>
       <CardContent>
-        <Button variant="outline" disabled={due === 0 || create.isPending} onClick={() => create.mutate()}>
+        <Button variant="outline" disabled={due === 0 || create.isPending} onClick={() => create.mutate()} className="max-md:w-full">
           {t("dashboard.review.button", { count: due > 0 ? size : "" })}
         </Button>
       </CardContent>

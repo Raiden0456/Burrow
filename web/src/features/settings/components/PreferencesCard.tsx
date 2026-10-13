@@ -79,7 +79,7 @@ function PreferencesForm({ initial }: { initial: Preferences }) {
             </div>
           )}
           <div>
-            <Button type="submit" disabled={save.isPending}>
+            <Button type="submit" disabled={save.isPending} className="max-md:w-full">
               {t("common.save")}
             </Button>
           </div>

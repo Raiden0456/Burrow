@@ -54,13 +54,13 @@ export function DailyCard() {
           <Skeleton className="h-8 w-32" />
         ) : d?.quizId ? (
           <div>
-            <Button asChild>
+            <Button asChild className="max-md:w-full">
               <Link to={`/quiz/${d.quizId}`}>{t("dashboard.daily.open")}</Link>
             </Button>
           </div>
         ) : (
           <div>
-            <Button onClick={() => create.mutate()} disabled={building}>
+            <Button onClick={() => create.mutate()} disabled={building} className="max-md:w-full">
               {building && <Loader2Icon className="animate-spin" />}
               {building ? t("dashboard.daily.building") : t("dashboard.daily.start")}
             </Button>
