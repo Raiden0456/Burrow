@@ -1,18 +1,19 @@
 import { useCallback, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, useParams } from "react-router"
-import { ChevronLeftIcon, EyeIcon, Loader2Icon, MessageSquareIcon, PlayIcon, RotateCcwIcon } from "lucide-react"
+import { CheckIcon, ChevronLeftIcon, CloudOffIcon, EyeIcon, LifeBuoyIcon, Loader2Icon, PlayIcon, RotateCcwIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { DifficultyBadge } from "@/components/DifficultyBadge"
 import { Markdown } from "@/components/Markdown"
 import { PageLoader } from "@/components/PageLoader"
 import { ErrorAlert } from "@/components/ErrorAlert"
-import { DifficultyBadge } from "@/components/DifficultyBadge"
-import { useStartChat } from "@/features/chat"
 import { useI18n } from "@/i18n"
 import { drillApi } from "../api"
-import { useDraft } from "../hooks/useDraft"
+import { useCodeAutosave } from "../hooks/useCodeAutosave"
+import { useDrillHelp } from "../hooks/useDrillHelp"
 import type { Drill, RunResult } from "../types/drill"
 import { CodeEditor } from "./CodeEditor"
+import { HelpPanel } from "./HelpPanel"
 import { RunOutput } from "./RunOutput"
 import { SolutionDialog } from "./SolutionDialog"
 
@@ -25,15 +26,24 @@ export function DrillPage() {
   return <DrillWorkspace key={id} drill={drill.data} />
 }
 
+function SaveIndicator({ state }: { state: ReturnType<typeof useCodeAutosave> }) {
+  const { t } = useI18n()
+  if (state === "saving") return <span className="flex items-center gap-1"><Loader2Icon className="size-3 animate-spin" />{t("drills.saving")}</span>
+  if (state === "saved") return <span className="flex items-center gap-1 text-success"><CheckIcon className="size-3" />{t("drills.saved")}</span>
+  if (state === "error") return <span className="flex items-center gap-1 text-destructive"><CloudOffIcon className="size-3" />{t("drills.saveFailed")}</span>
+  return null
+}
+
 function DrillWorkspace({ drill }: { drill: Drill }) {
   const { t } = useI18n()
   const queryClient = useQueryClient()
-  const startChat = useStartChat()
-  const [code, setCode] = useDraft(`drill-${drill.id}`, drill.lastAttempt?.code ?? drill.starterCode)
+  const [code, setCode] = useState(drill.draft || drill.lastAttempt?.code || drill.starterCode)
   const [result, setResult] = useState<RunResult | null>(
     drill.lastAttempt ? { passed: drill.lastAttempt.passed, buildError: false, timedOut: false, output: drill.lastAttempt.output, durationMs: 0 } : null,
   )
   const [showSolution, setShowSolution] = useState(false)
+  const saveState = useCodeAutosave(drill.id, code)
+  const help = useDrillHelp(drill.id)
 
   const run = useMutation({
     mutationFn: (src: string) => drillApi.run(drill.id, src),
@@ -50,21 +60,6 @@ function DrillWorkspace({ drill }: { drill: Drill }) {
   const runNow = useCallback(() => {
     if (!run.isPending) run.mutate(code)
   }, [run, code])
-
-  const askForHelp = () =>
-    startChat.mutate({
-      title: `Drill: ${drill.title}`,
-      context: [
-        `The learner is working on a coding drill: ${drill.title}`,
-        drill.description,
-        "Their current code:",
-        "```go",
-        code,
-        "```",
-        result ? `Latest go test output:\n${result.output}` : "",
-      ].join("\n"),
-      message: t("drills.helpMessage"),
-    })
 
   return (
     <>
@@ -92,8 +87,13 @@ function DrillWorkspace({ drill }: { drill: Drill }) {
               <RotateCcwIcon />
               {t("drills.reset")}
             </Button>
-            <Button variant="outline" onClick={askForHelp} disabled={startChat.isPending}>
-              <MessageSquareIcon />
+            <Button
+              variant="outline"
+              onClick={() => help.ask(code, result?.output ?? "")}
+              disabled={help.streaming}
+              className="border-hue-yellow/40 text-hue-yellow hover:bg-hue-yellow/10 hover:text-hue-yellow"
+            >
+              {help.streaming ? <Loader2Icon className="animate-spin" /> : <LifeBuoyIcon />}
               {t("drills.help")}
             </Button>
             <Button variant="ghost" onClick={() => setShowSolution(true)}>
@@ -101,7 +101,11 @@ function DrillWorkspace({ drill }: { drill: Drill }) {
               {t("drills.solution")}
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">{t("drills.editorHint")}</p>
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+            <span>{t("drills.editorHint")}</span>
+            <SaveIndicator state={saveState} />
+          </div>
+          <HelpPanel hints={drill.hints} streamingText={help.streaming ? help.text : null} error={help.error} />
           {result && <RunOutput result={result} />}
         </div>
       </div>

@@ -15,7 +15,7 @@ function Pre({ children }: { children?: ReactNode }) {
 
 export function Markdown({ children, className }: { children: string; className?: string }) {
   return (
-    <div className={cn("prose prose-theme max-w-none prose-pre:p-0 prose-code:rounded prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:font-normal prose-code:before:content-none prose-code:after:content-none", className)}>
+    <div className={cn("prose prose-theme max-w-none min-w-0 [overflow-wrap:anywhere] prose-pre:p-0 prose-code:rounded prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:font-normal prose-code:before:content-none prose-code:after:content-none", className)}>
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ pre: Pre }}>
         {children}
       </ReactMarkdown>

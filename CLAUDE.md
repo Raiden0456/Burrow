@@ -19,6 +19,7 @@ internal/
     openaicompat/      openai-go chat completions + json_schema (OpenAI, OpenRouter, Ollama…)
     acp/               Agent Client Protocol client (coder/acp-go-sdk): long-lived agent process, session per call
   providers/           provider CRUD, per-task routing (chat/generate/grade), live instance cache
+  jobs/                background jobs for long AI work (lesson/quiz/drill/daily), detached from requests
   curriculum/          topics.yaml (embedded) — the course outline
   lesson/ quiz/ drill/ chat/ progress/ daily/   feature packages: service + http.go
   store/               Open + migrations/, queries/ (sqlc input), db/ (sqlc output, generated)
@@ -44,6 +45,9 @@ web/src/
 - Never edit `internal/store/db/*` by hand. Schema changes = new goose migration file, never edit applied ones.
 - Feature packages own their prompts and JSON schemas. Schemas must stay compatible with OpenAI strict mode and Anthropic structured outputs: every property required, `additionalProperties: false`, no numeric/length constraints — enforce those in a `Validate()` method instead (GenerateJSON retries on failure).
 - Every AI call picks its provider via `providers.Service.For(ctx, task)`; return `providers.ErrNotConfigured` (412) when none exists.
+- Long AI generation (lessons, topic quizzes, drills, the manual daily quiz) never runs inside a request: start it with `jobs.Manager.Start` and return the job (202). One running job per kind+topic; lesson text is exposed as `partial` while running; jobs left running by a restart are marked failed on startup. The web app polls `/api/jobs`, and `JobsWatcher` toasts when a job finishes.
+- Short interactive AI output (quiz hints/deep dives, drill help, chat) streams over SSE and is persisted in the `hints` / chat tables. A hint before answering caps the FSRS rating at Hard.
+- Quiz answer drafts (`quiz_items.draft`) and drill code (`drills.draft`) are autosaved server-side so work survives closing the tab or switching devices.
 - Streaming endpoints use `httpx.NewSSE` with events `delta` / `done` / `error`; the web client consumes them via `stream()` in `web/src/lib/api.ts`.
 - Times are unix seconds in SQLite; local dates (streak, daily quiz) use the server `TZ`.
 - UI is bilingual (en/ru): every user-facing string goes through `t()` from `@/i18n` with keys in `web/src/i18n/locales/en.ts` (source of truth, typed) and `ru.ts`. Plurals use `{ one, few, many, other }` objects. The chosen language is stored server-side (`/api/settings/interface`, also used for push texts) and cached in localStorage. Curriculum titles/objectives need `title_ru`/`objectives_ru` in `topics.yaml` — loading panics otherwise. Backend errors meant for users carry a `code` (`httpx.Coded`) that the client maps to a translation in `lib/api.ts`.

@@ -10,8 +10,8 @@ export function ChatPage() {
   const threadId = id ? Number(id) : undefined
 
   return (
-    <div className="grid gap-6 md:grid-cols-[14rem_1fr]">
-      <aside className={threadId ? "hidden md:block" : "block"}>
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-[14rem_minmax(0,1fr)]">
+      <aside className={threadId ? "hidden min-w-0 md:block" : "block min-w-0"}>
         <ThreadList activeId={threadId} />
       </aside>
       <section className={threadId ? "block min-w-0" : "hidden md:block"}>

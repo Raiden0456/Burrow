@@ -1,11 +1,13 @@
 package daily
 
 import (
+	"context"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/raiden0456/gonteractive/internal/httpx"
+	"github.com/raiden0456/gonteractive/internal/jobs"
 	"github.com/raiden0456/gonteractive/internal/store/db"
 )
 
@@ -46,11 +48,14 @@ func (s *Scheduler) createToday(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	q, _, err := s.Ensure(r.Context(), time.Now(), prefs.DailySize)
+	job, err := s.jobs.Start(r.Context(), jobs.KindDaily, "", func(ctx context.Context, _ func(string)) (int64, error) {
+		q, _, err := s.Ensure(ctx, time.Now(), prefs.DailySize)
+		return q.ID, err
+	})
 	if err != nil {
 		return err
 	}
-	httpx.JSON(w, http.StatusOK, map[string]int64{"id": q.ID})
+	httpx.JSON(w, http.StatusAccepted, job)
 	return nil
 }
 

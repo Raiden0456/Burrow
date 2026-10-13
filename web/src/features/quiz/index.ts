@@ -1,4 +1,6 @@
 export { QuizPage } from "./components/QuizPage"
+export { QuizzesPage } from "./components/QuizzesPage"
+export { QuizList } from "./components/QuizList"
 export { QuizKindBadge } from "./components/QuizKindBadge"
-export { quizApi } from "./api"
+export { quizApi, type QuizFilter } from "./api"
 export type { QuizSummary, Quiz } from "./types/quiz"

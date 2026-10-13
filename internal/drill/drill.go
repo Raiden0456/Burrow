@@ -11,6 +11,7 @@ import (
 
 	"github.com/raiden0456/gonteractive/internal/ai"
 	"github.com/raiden0456/gonteractive/internal/curriculum"
+	"github.com/raiden0456/gonteractive/internal/jobs"
 	"github.com/raiden0456/gonteractive/internal/providers"
 	"github.com/raiden0456/gonteractive/internal/settings"
 	"github.com/raiden0456/gonteractive/internal/store/db"
@@ -63,12 +64,13 @@ type Service struct {
 	curriculum *curriculum.Curriculum
 	providers  *providers.Service
 	settings   *settings.Store
+	jobs       *jobs.Manager
 	runner     *Runner
 	runnerErr  error
 }
 
-func New(q *db.Queries, c *curriculum.Curriculum, p *providers.Service, s *settings.Store, runner *Runner, runnerErr error) *Service {
-	return &Service{q: q, curriculum: c, providers: p, settings: s, runner: runner, runnerErr: runnerErr}
+func New(q *db.Queries, c *curriculum.Curriculum, p *providers.Service, s *settings.Store, j *jobs.Manager, runner *Runner, runnerErr error) *Service {
+	return &Service{q: q, curriculum: c, providers: p, settings: s, jobs: j, runner: runner, runnerErr: runnerErr}
 }
 
 // Generate asks the model for an exercise and only accepts it once the reference solution passes the

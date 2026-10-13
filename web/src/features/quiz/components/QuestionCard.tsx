@@ -1,20 +1,20 @@
-import { useState } from "react"
-import { Loader2Icon, MessageSquareIcon } from "lucide-react"
+import { useMemo, useState } from "react"
+import { Loader2Icon } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { DifficultyBadge } from "@/components/DifficultyBadge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
+import { DifficultyBadge } from "@/components/DifficultyBadge"
 import { Markdown } from "@/components/Markdown"
-import { useStartChat } from "@/features/chat"
 import { useI18n } from "@/i18n"
-import { questionContext } from "../utils/chatContext"
+import { useDraftSaver } from "../hooks/useDraftSaver"
 import type { Question, QuizResponse } from "../types/quiz"
 import { AnswerFeedback } from "./AnswerFeedback"
 import { ChoiceOptions } from "./ChoiceOptions"
-
+import { HintsPanel } from "./HintsPanel"
 
 type Props = {
+  quizId: number
   question: Question
   topicTitle?: string
   submitting: boolean
@@ -23,18 +23,20 @@ type Props = {
   isLast: boolean
 }
 
-export function QuestionCard({ question, topicTitle, submitting, onSubmit, onNext, isLast }: Props) {
+export function QuestionCard({ quizId, question, topicTitle, submitting, onSubmit, onNext, isLast }: Props) {
   const { t } = useI18n()
-  const [selected, setSelected] = useState<number[]>([])
-  const [text, setText] = useState("")
-  const startChat = useStartChat()
+  const [selected, setSelected] = useState<number[]>(question.draft?.selected ?? [])
+  const [text, setText] = useState(question.draft?.text ?? "")
   const answered = !!question.result
+
+  const response = useMemo<QuizResponse>(() => (question.kind === "open" ? { text } : { selected }), [question.kind, text, selected])
+  useDraftSaver(quizId, question.id, response, !answered && !submitting)
 
   const toggle = (i: number) =>
     setSelected((prev) => (question.kind === "multi_choice" ? (prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]) : [i]))
 
   const canSubmit = question.kind === "open" ? text.trim().length > 0 : selected.length > 0
-  const submit = () => canSubmit && onSubmit(question.kind === "open" ? { text } : { selected })
+  const submit = () => canSubmit && onSubmit(response)
 
   return (
     <Card>
@@ -63,22 +65,9 @@ export function QuestionCard({ question, topicTitle, submitting, onSubmit, onNex
         )}
 
         {answered && <AnswerFeedback question={question} />}
+        <HintsPanel quizId={quizId} question={question} />
       </CardContent>
-      <CardFooter className="flex flex-wrap justify-between gap-2 border-t pt-4">
-        <Button
-          variant="ghost"
-          disabled={startChat.isPending}
-          onClick={() =>
-            startChat.mutate({
-              title: question.prompt.slice(0, 60),
-              context: questionContext(question),
-              message: answered ? t("quiz.explainMessage") : t("quiz.hintMessage"),
-            })
-          }
-        >
-          <MessageSquareIcon />
-          {answered ? t("quiz.explainMore") : t("quiz.hint")}
-        </Button>
+      <CardFooter className="flex justify-end gap-2 border-t pt-4">
         {answered ? (
           <Button onClick={onNext}>{isLast ? t("quiz.seeResults") : t("quiz.next")}</Button>
         ) : (

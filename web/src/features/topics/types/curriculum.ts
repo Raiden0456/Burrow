@@ -1,3 +1,5 @@
+import type { Job } from "@/features/jobs"
+
 export type Topic = {
   slug: string
   title: string
@@ -24,5 +26,11 @@ export type CurriculumModule = Omit<Module, "topics"> & {
 
 export type Lesson = {
   content: string | null
-  createdAt?: number
+  createdAt: number | null
+  job: Job | null
+}
+
+export type LessonSummary = {
+  topicSlug: string
+  createdAt: number
 }

@@ -31,12 +31,12 @@ export function ThreadList({ activeId }: { activeId?: number }) {
       {threads.isPending && <Skeleton className="h-24 w-full" />}
       <div className="flex flex-col gap-0.5">
         {threads.data?.map((thread) => (
-          <div key={thread.id} className="group flex items-center">
+          <div key={thread.id} className="group flex min-w-0 items-center gap-1">
             <NavLink
               to={`/chat/${thread.id}`}
               className={({ isActive }) =>
                 cn(
-                  "min-w-0 flex-1 truncate rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground",
+                  "min-w-0 flex-1 truncate rounded-md px-2 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-foreground md:py-1.5",
                   isActive && "bg-primary/12 font-medium text-primary hover:bg-primary/15 hover:text-primary",
                 )
               }
@@ -44,10 +44,10 @@ export function ThreadList({ activeId }: { activeId?: number }) {
               {thread.title || t("chat.newChat")}
             </NavLink>
             <Button
-              size="icon-xs"
+              size="icon-sm"
               variant="ghost"
               aria-label={t("chat.delete")}
-              className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
+              className="shrink-0 text-muted-foreground md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100"
               onClick={() => remove.mutate(thread.id)}
             >
               <Trash2Icon />

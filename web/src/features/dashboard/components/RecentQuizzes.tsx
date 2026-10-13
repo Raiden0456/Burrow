@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "react-router"
 import { HistoryIcon } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { IconChip } from "@/components/IconChip"
 import { QuizKindBadge, quizApi } from "@/features/quiz"
 import { useCurriculum } from "@/features/topics"
@@ -10,7 +10,7 @@ import { useI18n } from "@/i18n"
 export function RecentQuizzes() {
   const { t, locale } = useI18n()
   const { topics } = useCurriculum()
-  const quizzes = useQuery({ queryKey: ["quizzes"], queryFn: () => quizApi.list(8) })
+  const quizzes = useQuery({ queryKey: ["quizzes", "recent"], queryFn: () => quizApi.list({ limit: 8 }) })
   if (!quizzes.data?.length) return null
 
   return (
@@ -18,6 +18,11 @@ export function RecentQuizzes() {
       <CardHeader className="flex flex-row items-center gap-3">
         <IconChip icon={HistoryIcon} tone="cyan" />
         <CardTitle>{t("dashboard.recent.title")}</CardTitle>
+        <CardAction>
+          <Link to="/quizzes" className="text-sm text-primary hover:underline">
+            {t("dashboard.unfinished.all")}
+          </Link>
+        </CardAction>
       </CardHeader>
       <CardContent className="flex flex-col divide-y">
         {quizzes.data.map((q) => (

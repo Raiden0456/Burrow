@@ -163,7 +163,7 @@ func generationPrompt(topic curriculum.Topic, n int, mastery float64, existing [
 Rules:
 - Prefer questions that make the learner reason: predict the output of a snippet, spot the bug, pick the idiomatic approach, explain behaviour.
 - Code in prompts and options must be valid, realistic Go.
-- single_choice: exactly one correct option. multi_choice: two or more correct options, and say "select all that apply" in the prompt.
+- single_choice: exactly one correct option. multi_choice: two or more correct options; the interface already tells the learner to select all that apply, so do not add that phrase to the prompt.
 - Choice questions: 3-5 options with plausible distractors; "correct" holds zero-based option indices; "referenceAnswer" is "".
 - open: the answer should take 1-5 sentences or a short snippet; "options" and "correct" are empty arrays; "referenceAnswer" is a model answer.
 - "explanation" says why the right answer is right and, for choice questions, why the distractors are wrong.

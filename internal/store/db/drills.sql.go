@@ -12,7 +12,7 @@ import (
 const createDrill = `-- name: CreateDrill :one
 INSERT INTO drills (topic_slug, title, description, starter_code, test_code, solution, difficulty)
 VALUES (?, ?, ?, ?, ?, ?, ?)
-RETURNING id, topic_slug, title, description, starter_code, test_code, solution, difficulty, solved_at, created_at
+RETURNING id, topic_slug, title, description, starter_code, test_code, solution, difficulty, solved_at, created_at, draft
 `
 
 type CreateDrillParams struct {
@@ -47,6 +47,7 @@ func (q *Queries) CreateDrill(ctx context.Context, arg CreateDrillParams) (Drill
 		&i.Difficulty,
 		&i.SolvedAt,
 		&i.CreatedAt,
+		&i.Draft,
 	)
 	return i, err
 }
@@ -82,7 +83,7 @@ func (q *Queries) CreateDrillAttempt(ctx context.Context, arg CreateDrillAttempt
 }
 
 const getDrill = `-- name: GetDrill :one
-SELECT id, topic_slug, title, description, starter_code, test_code, solution, difficulty, solved_at, created_at FROM drills WHERE id = ?
+SELECT id, topic_slug, title, description, starter_code, test_code, solution, difficulty, solved_at, created_at, draft FROM drills WHERE id = ?
 `
 
 func (q *Queries) GetDrill(ctx context.Context, id int64) (Drill, error) {
@@ -99,6 +100,7 @@ func (q *Queries) GetDrill(ctx context.Context, id int64) (Drill, error) {
 		&i.Difficulty,
 		&i.SolvedAt,
 		&i.CreatedAt,
+		&i.Draft,
 	)
 	return i, err
 }
@@ -154,7 +156,7 @@ func (q *Queries) ListDrillTitlesByTopic(ctx context.Context, arg ListDrillTitle
 }
 
 const listDrillsByTopic = `-- name: ListDrillsByTopic :many
-SELECT id, topic_slug, title, description, starter_code, test_code, solution, difficulty, solved_at, created_at FROM drills WHERE topic_slug = ? ORDER BY id DESC
+SELECT id, topic_slug, title, description, starter_code, test_code, solution, difficulty, solved_at, created_at, draft FROM drills WHERE topic_slug = ? ORDER BY id DESC
 `
 
 func (q *Queries) ListDrillsByTopic(ctx context.Context, topicSlug string) ([]Drill, error) {
@@ -177,6 +179,7 @@ func (q *Queries) ListDrillsByTopic(ctx context.Context, topicSlug string) ([]Dr
 			&i.Difficulty,
 			&i.SolvedAt,
 			&i.CreatedAt,
+			&i.Draft,
 		); err != nil {
 			return nil, err
 		}
@@ -198,4 +201,21 @@ UPDATE drills SET solved_at = unixepoch() WHERE id = ? AND solved_at IS NULL
 func (q *Queries) MarkDrillSolved(ctx context.Context, id int64) error {
 	_, err := q.db.ExecContext(ctx, markDrillSolved, id)
 	return err
+}
+
+const saveDrillDraft = `-- name: SaveDrillDraft :execrows
+UPDATE drills SET draft = ? WHERE id = ?
+`
+
+type SaveDrillDraftParams struct {
+	Draft string
+	ID    int64
+}
+
+func (q *Queries) SaveDrillDraft(ctx context.Context, arg SaveDrillDraftParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, saveDrillDraft, arg.Draft, arg.ID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }

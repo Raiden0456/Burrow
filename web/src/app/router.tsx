@@ -11,6 +11,7 @@ export const router = createBrowserRouter([
       { index: true, Component: DashboardPage },
       { path: "topics", lazy: async () => ({ Component: (await import("@/features/topics")).TopicsPage }) },
       { path: "topics/:slug", lazy: async () => ({ Component: (await import("@/features/topics")).TopicPage }) },
+      { path: "quizzes", lazy: async () => ({ Component: (await import("@/features/quiz")).QuizzesPage }) },
       { path: "quiz/:id", lazy: async () => ({ Component: (await import("@/features/quiz")).QuizPage }) },
       { path: "drills/:id", lazy: async () => ({ Component: (await import("@/features/drill/components/DrillPage")).DrillPage }) },
       { path: "chat/:id?", lazy: async () => ({ Component: (await import("@/features/chat")).ChatPage }) },

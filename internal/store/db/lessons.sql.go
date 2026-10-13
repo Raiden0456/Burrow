@@ -20,6 +20,38 @@ func (q *Queries) GetLesson(ctx context.Context, topicSlug string) (Lesson, erro
 	return i, err
 }
 
+const listLessons = `-- name: ListLessons :many
+SELECT topic_slug, created_at FROM lessons ORDER BY topic_slug
+`
+
+type ListLessonsRow struct {
+	TopicSlug string
+	CreatedAt int64
+}
+
+func (q *Queries) ListLessons(ctx context.Context) ([]ListLessonsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listLessons)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListLessonsRow
+	for rows.Next() {
+		var i ListLessonsRow
+		if err := rows.Scan(&i.TopicSlug, &i.CreatedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const upsertLesson = `-- name: UpsertLesson :exec
 INSERT INTO lessons (topic_slug, content) VALUES (?, ?)
 ON CONFLICT (topic_slug) DO UPDATE SET content = excluded.content, created_at = unixepoch()

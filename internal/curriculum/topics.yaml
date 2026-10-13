@@ -397,6 +397,21 @@ modules:
     title: Internals and performance
     title_ru: Внутреннее устройство и производительность
     topics:
+      - slug: scheduler
+        title: The Go scheduler (GMP model)
+        title_ru: Планировщик Go (модель GMP)
+        objectives:
+          - Explain the G, M and P entities and how GOMAXPROCS limits the number of Ps
+          - Describe local and global run queues, runnext and work stealing between Ps
+          - Understand cooperative and asynchronous (signal-based) preemption and what sysmon does
+          - Know how blocking syscalls hand off the P and how the netpoller parks goroutines on I/O
+          - Inspect scheduler behaviour with GODEBUG=schedtrace and go tool trace
+        objectives_ru:
+          - Объяснять сущности G, M и P и то, как GOMAXPROCS ограничивает число P
+          - Описывать локальные и глобальную очереди, runnext и кражу работы между P
+          - Понимать кооперативное и асинхронное (через сигналы) вытеснение и роль sysmon
+          - Знать, как блокирующие системные вызовы отдают P и как netpoller паркует горутины на I/O
+          - Исследовать поведение планировщика через GODEBUG=schedtrace и go tool trace
       - slug: memory
         title: Memory, escape analysis and GC
         title_ru: Память, escape-анализ и GC

@@ -25,6 +25,20 @@ func (q *Queries) AddQuizItem(ctx context.Context, arg AddQuizItemParams) error 
 	return err
 }
 
+const clearQuizDraft = `-- name: ClearQuizDraft :exec
+UPDATE quiz_items SET draft = '' WHERE quiz_id = ? AND question_id = ?
+`
+
+type ClearQuizDraftParams struct {
+	QuizID     int64
+	QuestionID int64
+}
+
+func (q *Queries) ClearQuizDraft(ctx context.Context, arg ClearQuizDraftParams) error {
+	_, err := q.db.ExecContext(ctx, clearQuizDraft, arg.QuizID, arg.QuestionID)
+	return err
+}
+
 const completeQuiz = `-- name: CompleteQuiz :exec
 UPDATE quizzes SET completed_at = unixepoch() WHERE id = ? AND completed_at IS NULL
 `
@@ -175,6 +189,38 @@ func (q *Queries) ListQuizAnswers(ctx context.Context, quizID sql.NullInt64) ([]
 	return items, nil
 }
 
+const listQuizDrafts = `-- name: ListQuizDrafts :many
+SELECT question_id, draft FROM quiz_items WHERE quiz_id = ? AND draft != ''
+`
+
+type ListQuizDraftsRow struct {
+	QuestionID int64
+	Draft      string
+}
+
+func (q *Queries) ListQuizDrafts(ctx context.Context, quizID int64) ([]ListQuizDraftsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listQuizDrafts, quizID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListQuizDraftsRow
+	for rows.Next() {
+		var i ListQuizDraftsRow
+		if err := rows.Scan(&i.QuestionID, &i.Draft); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listQuizQuestions = `-- name: ListQuizQuestions :many
 SELECT q.id, q.topic_slug, q.kind, q.prompt, q.options, q.correct, q.reference_answer, q.explanation, q.difficulty, q.created_at
 FROM quiz_items i
@@ -203,6 +249,50 @@ func (q *Queries) ListQuizQuestions(ctx context.Context, quizID int64) ([]Questi
 			&i.Explanation,
 			&i.Difficulty,
 			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listQuizzes = `-- name: ListQuizzes :many
+SELECT id, kind, topic_slug, daily_date, created_at, completed_at FROM quizzes
+WHERE (?1 IS NULL OR topic_slug = ?1)
+  AND (?2 IS NULL OR (completed_at IS NULL) = ?2)
+ORDER BY id DESC
+LIMIT ?3
+`
+
+type ListQuizzesParams struct {
+	TopicSlug interface{}
+	Open      interface{}
+	RowLimit  int64
+}
+
+func (q *Queries) ListQuizzes(ctx context.Context, arg ListQuizzesParams) ([]Quiz, error) {
+	rows, err := q.db.QueryContext(ctx, listQuizzes, arg.TopicSlug, arg.Open, arg.RowLimit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Quiz
+	for rows.Next() {
+		var i Quiz
+		if err := rows.Scan(
+			&i.ID,
+			&i.Kind,
+			&i.TopicSlug,
+			&i.DailyDate,
+			&i.CreatedAt,
+			&i.CompletedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -249,4 +339,22 @@ func (q *Queries) ListRecentQuizzes(ctx context.Context, limit int64) ([]Quiz, e
 		return nil, err
 	}
 	return items, nil
+}
+
+const saveQuizDraft = `-- name: SaveQuizDraft :execrows
+UPDATE quiz_items SET draft = ? WHERE quiz_id = ? AND question_id = ?
+`
+
+type SaveQuizDraftParams struct {
+	Draft      string
+	QuizID     int64
+	QuestionID int64
+}
+
+func (q *Queries) SaveQuizDraft(ctx context.Context, arg SaveQuizDraftParams) (int64, error) {
+	result, err := q.db.ExecContext(ctx, saveQuizDraft, arg.Draft, arg.QuizID, arg.QuestionID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
 }

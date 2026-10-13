@@ -1,5 +1,6 @@
-import { useQuery } from "@tanstack/react-query"
-import { RefreshCwIcon, SparklesIcon } from "lucide-react"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useEffect, useRef } from "react"
+import { Loader2Icon, RefreshCwIcon, SparklesIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Markdown } from "@/components/Markdown"
@@ -7,36 +8,54 @@ import { ErrorAlert } from "@/components/ErrorAlert"
 import { PageLoader } from "@/components/PageLoader"
 import { useI18n } from "@/i18n"
 import { topicsApi } from "../api"
-import { useLessonStream } from "../hooks/useLessonStream"
+import { useGenerateLesson } from "../hooks/useGenerateLesson"
 
 export function LessonPanel({ slug }: { slug: string }) {
   const { t } = useI18n()
-  const lesson = useQuery({ queryKey: ["lesson", slug], queryFn: () => topicsApi.lesson(slug) })
-  const gen = useLessonStream(slug)
+  const queryClient = useQueryClient()
+  const lesson = useQuery({
+    queryKey: ["lesson", slug],
+    queryFn: () => topicsApi.lesson(slug),
+    refetchInterval: (q) => (q.state.data?.job ? 1200 : false),
+  })
+  const generate = useGenerateLesson()
+
+  const running = lesson.data?.job ?? null
+  const wasRunning = useRef(false)
+  useEffect(() => {
+    if (wasRunning.current && !running) queryClient.invalidateQueries({ queryKey: ["jobs"] })
+    wasRunning.current = !!running
+  }, [running, queryClient])
 
   if (lesson.isPending) return <PageLoader />
   if (lesson.error) return <ErrorAlert error={lesson.error} />
 
-  const content = gen.streaming || gen.text ? gen.text : lesson.data.content
+  const start = () => generate.mutate(slug)
+  const content = running ? running.partial || "" : lesson.data.content
 
   return (
     <div className="flex flex-col gap-4">
-      {gen.error && <ErrorAlert error={gen.error} title={t("topics.lesson.failed")} />}
+      {running && (
+        <div className="flex items-center gap-2 rounded-lg border border-hue-blue/30 bg-hue-blue/8 px-3 py-2 text-sm text-hue-blue">
+          <Loader2Icon className="size-4 animate-spin" />
+          {t("topics.lesson.background")}
+        </div>
+      )}
 
       {content ? (
         <>
           <Markdown>{content}</Markdown>
-          {gen.streaming && <Skeleton className="h-4 w-1/3" />}
-          {!gen.streaming && (
+          {running && <Skeleton className="h-4 w-1/3" />}
+          {!running && (
             <div>
-              <Button variant="outline" size="sm" onClick={gen.start}>
+              <Button variant="outline" size="sm" onClick={start} disabled={generate.isPending}>
                 <RefreshCwIcon />
                 {t("topics.lesson.regenerate")}
               </Button>
             </div>
           )}
         </>
-      ) : gen.streaming ? (
+      ) : running ? (
         <div className="flex flex-col gap-2">
           <Skeleton className="h-6 w-1/2" />
           <Skeleton className="h-4 w-full" />
@@ -45,7 +64,7 @@ export function LessonPanel({ slug }: { slug: string }) {
       ) : (
         <div className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-hue-blue/40 bg-hue-blue/5 p-6">
           <p className="text-sm text-muted-foreground">{t("topics.lesson.empty")}</p>
-          <Button onClick={gen.start}>
+          <Button onClick={start} disabled={generate.isPending}>
             <SparklesIcon />
             {t("topics.lesson.generate")}
           </Button>

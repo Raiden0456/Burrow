@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/raiden0456/gonteractive/internal/jobs"
 	"github.com/raiden0456/gonteractive/internal/providers"
 	"github.com/raiden0456/gonteractive/internal/quiz"
 	"github.com/raiden0456/gonteractive/internal/settings"
@@ -26,13 +27,14 @@ type Scheduler struct {
 	settings *settings.Store
 	quizzes  *quiz.Service
 	pusher   *Pusher
+	jobs     *jobs.Manager
 
 	mu          sync.Mutex
 	lastFailure time.Time
 }
 
-func NewScheduler(q *db.Queries, s *settings.Store, quizzes *quiz.Service, pusher *Pusher) *Scheduler {
-	return &Scheduler{q: q, settings: s, quizzes: quizzes, pusher: pusher}
+func NewScheduler(q *db.Queries, s *settings.Store, quizzes *quiz.Service, pusher *Pusher, j *jobs.Manager) *Scheduler {
+	return &Scheduler{q: q, settings: s, quizzes: quizzes, pusher: pusher, jobs: j}
 }
 
 func (s *Scheduler) Run(ctx context.Context) {

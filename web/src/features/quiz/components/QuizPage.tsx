@@ -68,6 +68,7 @@ export function QuizPage() {
       ) : (
         <QuestionCard
           key={data.questions[index].id}
+          quizId={data.id}
           question={data.questions[index]}
           topicTitle={data.kind === "topic" ? undefined : topics.get(data.questions[index].topicSlug)?.title}
           submitting={answer.isPending}

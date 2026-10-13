@@ -33,3 +33,19 @@ RETURNING *;
 
 -- name: CompleteQuiz :exec
 UPDATE quizzes SET completed_at = unixepoch() WHERE id = ? AND completed_at IS NULL;
+
+-- name: ListQuizzes :many
+SELECT * FROM quizzes
+WHERE (sqlc.narg(topic_slug) IS NULL OR topic_slug = sqlc.narg(topic_slug))
+  AND (sqlc.narg(open) IS NULL OR (completed_at IS NULL) = sqlc.narg(open))
+ORDER BY id DESC
+LIMIT sqlc.arg(row_limit);
+
+-- name: ListQuizDrafts :many
+SELECT question_id, draft FROM quiz_items WHERE quiz_id = ? AND draft != '';
+
+-- name: SaveQuizDraft :execrows
+UPDATE quiz_items SET draft = ? WHERE quiz_id = ? AND question_id = ?;
+
+-- name: ClearQuizDraft :exec
+UPDATE quiz_items SET draft = '' WHERE quiz_id = ? AND question_id = ?;

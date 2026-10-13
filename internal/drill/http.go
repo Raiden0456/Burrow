@@ -1,9 +1,13 @@
 package drill
 
 import (
+	"context"
+	"database/sql"
 	"net/http"
 
 	"github.com/raiden0456/gonteractive/internal/httpx"
+	"github.com/raiden0456/gonteractive/internal/jobs"
+	"github.com/raiden0456/gonteractive/internal/providers"
 	"github.com/raiden0456/gonteractive/internal/store/db"
 )
 
@@ -30,7 +34,9 @@ type drillView struct {
 	StarterCode string       `json:"starterCode"`
 	Difficulty  int64        `json:"difficulty"`
 	Solved      bool         `json:"solved"`
+	Draft       string       `json:"draft"`
 	LastAttempt *attemptView `json:"lastAttempt"`
+	Hints       []Hint       `json:"hints"`
 }
 
 func (s *Service) Routes(mux *http.ServeMux) {
@@ -38,6 +44,8 @@ func (s *Service) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/topics/{slug}/drills", httpx.Handle(s.create))
 	mux.HandleFunc("GET /api/drills/{id}", httpx.Handle(s.get))
 	mux.HandleFunc("GET /api/drills/{id}/solution", httpx.Handle(s.solution))
+	mux.HandleFunc("PUT /api/drills/{id}/draft", httpx.Handle(s.saveDraft))
+	mux.HandleFunc("POST /api/drills/{id}/help", httpx.Handle(s.help))
 	mux.HandleFunc("POST /api/drills/{id}/run", httpx.Handle(s.run))
 }
 
@@ -59,11 +67,24 @@ func (s *Service) list(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (s *Service) create(w http.ResponseWriter, r *http.Request) error {
-	d, err := s.Generate(r.Context(), r.PathValue("slug"))
+	topic, err := s.curriculum.Lookup(r.PathValue("slug"))
 	if err != nil {
 		return err
 	}
-	httpx.JSON(w, http.StatusCreated, map[string]int64{"id": d.ID})
+	if s.runner == nil {
+		return s.runnerErr
+	}
+	if _, err := s.providers.For(r.Context(), providers.TaskGenerate); err != nil {
+		return err
+	}
+	job, err := s.jobs.Start(r.Context(), jobs.KindDrill, topic.Slug, func(ctx context.Context, _ func(string)) (int64, error) {
+		d, err := s.Generate(ctx, topic.Slug)
+		return d.ID, err
+	})
+	if err != nil {
+		return err
+	}
+	httpx.JSON(w, http.StatusAccepted, job)
 	return nil
 }
 
@@ -80,7 +101,66 @@ func (s *Service) get(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	httpx.JSON(w, http.StatusOK, toView(d, attempt))
+	hints, err := s.q.ListDrillHints(r.Context(), sql.NullInt64{Int64: id, Valid: true})
+	if err != nil {
+		return err
+	}
+	view := toView(d, attempt)
+	for _, h := range hints {
+		view.Hints = append(view.Hints, Hint{ID: h.ID, Content: h.Content, CreatedAt: h.CreatedAt})
+	}
+	httpx.JSON(w, http.StatusOK, view)
+	return nil
+}
+
+func (s *Service) saveDraft(w http.ResponseWriter, r *http.Request) error {
+	id, err := httpx.PathID(r, "id")
+	if err != nil {
+		return err
+	}
+	var in struct {
+		Code string `json:"code"`
+	}
+	if err := httpx.Decode(r, &in); err != nil {
+		return err
+	}
+	n, err := s.q.SaveDrillDraft(r.Context(), db.SaveDrillDraftParams{ID: id, Draft: in.Code})
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return sql.ErrNoRows
+	}
+	w.WriteHeader(http.StatusNoContent)
+	return nil
+}
+
+func (s *Service) help(w http.ResponseWriter, r *http.Request) error {
+	id, err := httpx.PathID(r, "id")
+	if err != nil {
+		return err
+	}
+	var in struct {
+		Code   string `json:"code"`
+		Output string `json:"output"`
+	}
+	if err := httpx.Decode(r, &in); err != nil {
+		return err
+	}
+	if _, err := s.q.GetDrill(r.Context(), id); err != nil {
+		return err
+	}
+	if _, err := s.providers.For(r.Context(), providers.TaskChat); err != nil {
+		return err
+	}
+
+	sse := httpx.NewSSE(w)
+	hint, err := s.StreamHelp(r.Context(), id, in.Code, in.Output, sse.Delta)
+	if err != nil {
+		sse.Fail(err)
+		return nil
+	}
+	sse.Send("done", hint)
 	return nil
 }
 
@@ -125,6 +205,8 @@ func toView(d db.Drill, a *db.DrillAttempt) drillView {
 		StarterCode: d.StarterCode,
 		Difficulty:  d.Difficulty,
 		Solved:      d.SolvedAt.Valid,
+		Draft:       d.Draft,
+		Hints:       []Hint{},
 	}
 	if a != nil {
 		v.LastAttempt = &attemptView{Code: a.Code, Passed: a.Passed == 1, Output: a.Output, CreatedAt: a.CreatedAt}

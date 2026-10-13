@@ -15,6 +15,15 @@ export type AnswerResult = {
   referenceAnswer: string
 }
 
+export type HintKind = "hint" | "explain"
+
+export type Hint = {
+  id: number
+  kind: HintKind
+  content: string
+  createdAt: number
+}
+
 export type Question = {
   id: number
   topicSlug: string
@@ -23,6 +32,8 @@ export type Question = {
   options: string[]
   difficulty: number
   result: AnswerResult | null
+  draft: QuizResponse | null
+  hints: Hint[]
 }
 
 export type QuizKind = "topic" | "review" | "daily"

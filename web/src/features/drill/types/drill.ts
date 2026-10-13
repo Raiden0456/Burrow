@@ -13,6 +13,12 @@ export type DrillAttempt = {
   createdAt: number
 }
 
+export type DrillHint = {
+  id: number
+  content: string
+  createdAt: number
+}
+
 export type Drill = {
   id: number
   topicSlug: string
@@ -21,7 +27,9 @@ export type Drill = {
   starterCode: string
   difficulty: number
   solved: boolean
+  draft: string
   lastAttempt: DrillAttempt | null
+  hints: DrillHint[]
 }
 
 export type RunResult = {

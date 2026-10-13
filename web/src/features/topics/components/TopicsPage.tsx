@@ -1,20 +1,29 @@
+import { useQuery } from "@tanstack/react-query"
 import { Link } from "react-router"
 import { BadgeCheckIcon, CheckCircle2Icon, CodeIcon } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PageHeader } from "@/components/PageHeader"
 import { PageLoader } from "@/components/PageLoader"
 import { ErrorAlert } from "@/components/ErrorAlert"
+import { useJobs } from "@/features/jobs"
 import { MasteryBar, useProgress } from "@/features/progress"
 import { useI18n } from "@/i18n"
+import { topicsApi } from "../api"
 import { useCurriculum } from "../hooks/useCurriculum"
+import { LessonAction } from "./LessonAction"
 
 export function TopicsPage() {
   const { t } = useI18n()
   const curriculum = useCurriculum()
   const { byTopic } = useProgress()
+  const lessons = useQuery({ queryKey: ["lessons"], queryFn: topicsApi.lessons })
+  const jobs = useJobs()
 
   if (curriculum.isPending) return <PageLoader />
   if (curriculum.error) return <ErrorAlert error={curriculum.error} />
+
+  const withLesson = new Set(lessons.data?.map((l) => l.topicSlug))
+  const generating = new Set(jobs.data?.filter((j) => j.kind === "lesson" && j.status === "running").map((j) => j.topicSlug))
 
   return (
     <>
@@ -31,13 +40,9 @@ export function TopicsPage() {
                 const stat = byTopic.get(topic.slug)
                 const mastered = (stat?.mastery ?? 0) >= 0.7
                 return (
-                  <Link
-                    key={topic.slug}
-                    to={`/topics/${topic.slug}`}
-                    className="-mx-2 flex flex-col gap-2 rounded-md px-2 py-3 transition-colors hover:bg-muted/60 sm:flex-row sm:items-center sm:justify-between"
-                  >
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 font-medium">
+                  <div key={topic.slug} className="-mx-2 flex flex-col gap-2 rounded-md px-2 py-3 transition-colors hover:bg-muted/60 sm:flex-row sm:items-center">
+                    <Link to={`/topics/${topic.slug}`} className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2 font-medium">
                         {topic.title}
                         {mastered && (
                           <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-[11px] font-medium text-success">
@@ -56,9 +61,14 @@ export function TopicsPage() {
                           {t("topics.drills", { count: stat?.drillsSolved ?? 0 })}
                         </span>
                       </div>
+                    </Link>
+                    <div className="flex items-center gap-3">
+                      <LessonAction slug={topic.slug} hasLesson={withLesson.has(topic.slug)} generating={generating.has(topic.slug)} />
+                      <Link to={`/topics/${topic.slug}`} className="w-full sm:w-40">
+                        <MasteryBar value={stat?.mastery ?? 0} />
+                      </Link>
                     </div>
-                    <MasteryBar value={stat?.mastery ?? 0} className="w-full sm:w-40" />
-                  </Link>
+                  </div>
                 )
               })}
             </CardContent>

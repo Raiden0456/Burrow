@@ -82,7 +82,7 @@ func Rating(score float64) fsrs.Rating {
 	}
 }
 
-func (s *Service) Review(ctx context.Context, q *db.Queries, questionID int64, score float64, now time.Time) error {
+func (s *Service) Review(ctx context.Context, q *db.Queries, questionID int64, score float64, hinted bool, now time.Time) error {
 	card := fsrs.NewCard()
 	row, err := q.GetCard(ctx, questionID)
 	switch {
@@ -94,7 +94,11 @@ func (s *Service) Review(ctx context.Context, q *db.Queries, questionID int64, s
 		return err
 	}
 
-	next := s.fsrs.Next(card, now, Rating(score)).Card
+	rating := Rating(score)
+	if hinted {
+		rating = min(rating, fsrs.Hard)
+	}
+	next := s.fsrs.Next(card, now, rating).Card
 	state, err := json.Marshal(next)
 	if err != nil {
 		return err

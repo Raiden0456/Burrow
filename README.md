@@ -13,9 +13,11 @@
 
 ## Features
 
-- **Structured course**: 31 topics in 7 modules, from the toolchain to concurrency, generics, iterators and runtime internals.
+- **Structured course**: 32 topics in 7 modules, from the toolchain to concurrency, generics, iterators and runtime internals such as the GMP scheduler.
 - **AI lessons** generated for each topic on demand, tailored to your background, and streamed as they are written.
 - **Quizzes** with single-choice, multi-choice and open questions. Choice answers are graded instantly; open answers are graded by the AI with feedback. New questions avoid repeats and probe your past mistakes.
+- **Inline hints**: up to three progressively stronger hints right under the question, and an in-depth explanation of your answer afterwards.
+- **Nothing gets lost**: lessons, quizzes and drills are generated in the background, so you can leave the page and get notified when they are ready. Every quiz is saved and can be resumed, and answer drafts and drill code are autosaved.
 - **Coding drills**: the AI writes an exercise with hidden tests, the server checks that the reference solution passes before showing it to you, and your code runs with `go test` in a sandboxed temp module.
 - **Spaced repetition (FSRS)** schedules every answered question for review at the right time.
 - **Daily quiz**: due reviews plus fresh questions on your weakest topics, built automatically every day, with Web Push notifications.

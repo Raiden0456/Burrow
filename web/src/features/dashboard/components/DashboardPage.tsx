@@ -16,6 +16,7 @@ import { HeroCard } from "./HeroCard"
 import { ModulesCard } from "./ModulesCard"
 import { RecentQuizzes } from "./RecentQuizzes"
 import { ReviewCard } from "./ReviewCard"
+import { UnfinishedQuizzes } from "./UnfinishedQuizzes"
 
 export function DashboardPage() {
   const { t } = useI18n()
@@ -53,6 +54,8 @@ export function DashboardPage() {
         <StatTile icon={TargetIcon} tone="green" label={t("dashboard.stat.accuracy")} value={p.accuracy7d === null ? "—" : `${Math.round(p.accuracy7d * 100)}%`} />
         <StatTile icon={CodeIcon} tone="purple" label={t("dashboard.stat.drills")} value={p.drillsSolved} />
       </div>
+
+      <UnfinishedQuizzes />
 
       <div className="grid gap-6 md:grid-cols-2">
         <DailyCard />

@@ -17,6 +17,7 @@ import (
 	"github.com/raiden0456/gonteractive/internal/curriculum"
 	"github.com/raiden0456/gonteractive/internal/daily"
 	"github.com/raiden0456/gonteractive/internal/drill"
+	"github.com/raiden0456/gonteractive/internal/jobs"
 	"github.com/raiden0456/gonteractive/internal/lesson"
 	"github.com/raiden0456/gonteractive/internal/progress"
 	"github.com/raiden0456/gonteractive/internal/providers"
@@ -55,7 +56,15 @@ func run() error {
 	providerService := providers.New(q, settingsStore)
 	defer providerService.Close()
 	progressService := progress.New(q, cur)
-	quizService := quiz.New(conn, q, cur, providerService, settingsStore, progressService)
+	jobsCtx, cancelJobs := context.WithCancel(ctx)
+	jobManager, err := jobs.New(jobsCtx, q)
+	if err != nil {
+		cancelJobs()
+		return err
+	}
+	defer jobManager.Wait()
+	defer cancelJobs()
+	quizService := quiz.New(conn, q, cur, providerService, settingsStore, progressService, jobManager)
 
 	runner, runnerErr := drill.NewRunner(cfg.GoCacheDir())
 	if runnerErr != nil {
@@ -66,7 +75,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	scheduler := daily.NewScheduler(q, settingsStore, quizService, pusher)
+	scheduler := daily.NewScheduler(q, settingsStore, quizService, pusher, jobManager)
 	go scheduler.Run(ctx)
 
 	handler := server.Handler(
@@ -76,9 +85,10 @@ func run() error {
 		settingsStore,
 		providerService,
 		progressService,
-		lesson.New(q, cur, providerService, settingsStore),
+		jobManager,
+		lesson.New(q, cur, providerService, settingsStore, jobManager),
 		quizService,
-		drill.New(q, cur, providerService, settingsStore, runner, runnerErr),
+		drill.New(q, cur, providerService, settingsStore, jobManager, runner, runnerErr),
 		chat.New(q, providerService, settingsStore),
 		scheduler,
 	)

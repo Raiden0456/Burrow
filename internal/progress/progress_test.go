@@ -1,10 +1,14 @@
 package progress
 
 import (
+	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/open-spaced-repetition/go-fsrs/v3"
+
+	"github.com/raiden0456/gonteractive/internal/store"
+	"github.com/raiden0456/gonteractive/internal/store/db"
 )
 
 func TestRating(t *testing.T) {
@@ -59,5 +63,35 @@ func TestStreak(t *testing.T) {
 				t.Fatalf("got %d, want %d", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestReviewCapsHintedAnswers(t *testing.T) {
+	conn, err := store.Open(t.Context(), filepath.Join(t.TempDir(), "progress.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { conn.Close() })
+	q := db.New(conn)
+	s := New(q, nil)
+	now := time.Date(2026, 10, 13, 12, 0, 0, 0, time.UTC)
+
+	due := func(hinted bool) int64 {
+		row, err := q.CreateQuestion(t.Context(), db.CreateQuestionParams{TopicSlug: "maps", Kind: "single_choice", Prompt: "p", Options: "[]", Correct: "[0]", Explanation: "e", Difficulty: 1})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := s.Review(t.Context(), q, row.ID, 1, hinted, now); err != nil {
+			t.Fatal(err)
+		}
+		card, err := q.GetCard(t.Context(), row.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return card.Due
+	}
+
+	if plain, hinted := due(false), due(true); hinted >= plain {
+		t.Fatalf("a correct answer after a hint should come back sooner: hinted %d, plain %d", hinted, plain)
 	}
 }

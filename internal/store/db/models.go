@@ -51,6 +51,7 @@ type Drill struct {
 	Difficulty  int64
 	SolvedAt    sql.NullInt64
 	CreatedAt   int64
+	Draft       string
 }
 
 type DrillAttempt struct {
@@ -60,6 +61,27 @@ type DrillAttempt struct {
 	Passed    int64
 	Output    string
 	CreatedAt int64
+}
+
+type Hint struct {
+	ID         int64
+	Kind       string
+	QuizID     sql.NullInt64
+	QuestionID sql.NullInt64
+	DrillID    sql.NullInt64
+	Content    string
+	CreatedAt  int64
+}
+
+type Job struct {
+	ID         int64
+	Kind       string
+	TopicSlug  string
+	Status     string
+	ResultID   sql.NullInt64
+	Error      string
+	CreatedAt  int64
+	FinishedAt sql.NullInt64
 }
 
 type Lesson struct {
@@ -109,6 +131,7 @@ type QuizItem struct {
 	QuizID     int64
 	Position   int64
 	QuestionID int64
+	Draft      string
 }
 
 type Session struct {

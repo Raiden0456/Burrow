@@ -17,6 +17,7 @@ const codeMessages: Record<string, string> = {
   nothing_due: "errors.nothingDue",
   already_answered: "errors.alreadyAnswered",
   no_toolchain: "errors.noToolchain",
+  hint_limit: "errors.hintLimit",
 }
 
 type Method = "GET" | "POST" | "PUT" | "DELETE"

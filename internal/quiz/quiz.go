@@ -13,6 +13,7 @@ import (
 
 	"github.com/raiden0456/gonteractive/internal/curriculum"
 	"github.com/raiden0456/gonteractive/internal/httpx"
+	"github.com/raiden0456/gonteractive/internal/jobs"
 	"github.com/raiden0456/gonteractive/internal/progress"
 	"github.com/raiden0456/gonteractive/internal/providers"
 	"github.com/raiden0456/gonteractive/internal/settings"
@@ -49,14 +50,23 @@ type Result struct {
 	ReferenceAnswer string   `json:"referenceAnswer"`
 }
 
+type Hint struct {
+	ID        int64  `json:"id"`
+	Kind      string `json:"kind"`
+	Content   string `json:"content"`
+	CreatedAt int64  `json:"createdAt"`
+}
+
 type QuestionView struct {
-	ID         int64    `json:"id"`
-	TopicSlug  string   `json:"topicSlug"`
-	Kind       Kind     `json:"kind"`
-	Prompt     string   `json:"prompt"`
-	Options    []string `json:"options"`
-	Difficulty int64    `json:"difficulty"`
-	Result     *Result  `json:"result"`
+	ID         int64     `json:"id"`
+	TopicSlug  string    `json:"topicSlug"`
+	Kind       Kind      `json:"kind"`
+	Prompt     string    `json:"prompt"`
+	Options    []string  `json:"options"`
+	Difficulty int64     `json:"difficulty"`
+	Result     *Result   `json:"result"`
+	Draft      *Response `json:"draft"`
+	Hints      []Hint    `json:"hints"`
 }
 
 type QuizView struct {
@@ -83,6 +93,7 @@ type Summary struct {
 }
 
 type Service struct {
+	jobs       *jobs.Manager
 	conn       *sql.DB
 	q          *db.Queries
 	curriculum *curriculum.Curriculum
@@ -91,8 +102,8 @@ type Service struct {
 	progress   *progress.Service
 }
 
-func New(conn *sql.DB, q *db.Queries, c *curriculum.Curriculum, p *providers.Service, s *settings.Store, prog *progress.Service) *Service {
-	return &Service{conn: conn, q: q, curriculum: c, providers: p, settings: s, progress: prog}
+func New(conn *sql.DB, q *db.Queries, c *curriculum.Curriculum, p *providers.Service, s *settings.Store, prog *progress.Service, j *jobs.Manager) *Service {
+	return &Service{conn: conn, q: q, curriculum: c, providers: p, settings: s, progress: prog, jobs: j}
 }
 
 func (s *Service) CreateTopicQuiz(ctx context.Context, slug string, size int) (db.Quiz, error) {
@@ -227,6 +238,22 @@ func (s *Service) View(ctx context.Context, id int64) (QuizView, error) {
 	for _, a := range answers {
 		byQuestion[a.QuestionID] = a
 	}
+	drafts, err := s.q.ListQuizDrafts(ctx, id)
+	if err != nil {
+		return QuizView{}, err
+	}
+	draftByQuestion := map[int64]string{}
+	for _, d := range drafts {
+		draftByQuestion[d.QuestionID] = d.Draft
+	}
+	hints, err := s.q.ListQuizHints(ctx, sql.NullInt64{Int64: id, Valid: true})
+	if err != nil {
+		return QuizView{}, err
+	}
+	hintsByQuestion := map[int64][]Hint{}
+	for _, h := range hints {
+		hintsByQuestion[h.QuestionID.Int64] = append(hintsByQuestion[h.QuestionID.Int64], toHint(h))
+	}
 
 	view := QuizView{
 		ID:          quiz.ID,
@@ -238,7 +265,10 @@ func (s *Service) View(ctx context.Context, id int64) (QuizView, error) {
 		Score:       averageScore(answers),
 	}
 	for _, q := range questions {
-		qv := QuestionView{ID: q.ID, TopicSlug: q.TopicSlug, Kind: Kind(q.Kind), Prompt: q.Prompt, Difficulty: q.Difficulty}
+		qv := QuestionView{ID: q.ID, TopicSlug: q.TopicSlug, Kind: Kind(q.Kind), Prompt: q.Prompt, Difficulty: q.Difficulty, Hints: hintsByQuestion[q.ID]}
+		if qv.Hints == nil {
+			qv.Hints = []Hint{}
+		}
 		if err := json.Unmarshal([]byte(q.Options), &qv.Options); err != nil {
 			return QuizView{}, err
 		}
@@ -248,6 +278,11 @@ func (s *Service) View(ctx context.Context, id int64) (QuizView, error) {
 				return QuizView{}, err
 			}
 			qv.Result = &res
+		} else if raw, ok := draftByQuestion[q.ID]; ok {
+			var draft Response
+			if json.Unmarshal([]byte(raw), &draft) == nil {
+				qv.Draft = &draft
+			}
 		}
 		view.Questions = append(view.Questions, qv)
 	}
@@ -300,6 +335,18 @@ func (s *Service) Answer(ctx context.Context, quizID, questionID int64, resp Res
 		}
 	}
 
+	hints, err := s.q.ListQuestionHints(ctx, db.ListQuestionHintsParams{
+		QuizID:     sql.NullInt64{Int64: quizID, Valid: true},
+		QuestionID: sql.NullInt64{Int64: questionID, Valid: true},
+	})
+	if err != nil {
+		return Result{}, false, err
+	}
+	hinted := false
+	for _, h := range hints {
+		hinted = hinted || h.Kind == hintKindHint
+	}
+
 	rawResp, _ := json.Marshal(resp)
 	var answer db.Answer
 	completed := false
@@ -316,7 +363,10 @@ func (s *Service) Answer(ctx context.Context, quizID, questionID int64, resp Res
 		if err != nil {
 			return err
 		}
-		if err := s.progress.Review(ctx, q, questionID, score, time.Now()); err != nil {
+		if err := s.progress.Review(ctx, q, questionID, score, hinted, time.Now()); err != nil {
+			return err
+		}
+		if err := q.ClearQuizDraft(ctx, db.ClearQuizDraftParams{QuizID: quizID, QuestionID: questionID}); err != nil {
 			return err
 		}
 		if len(answers)+1 == len(questions) {
@@ -332,8 +382,21 @@ func (s *Service) Answer(ctx context.Context, quizID, questionID int64, resp Res
 	return res, completed, err
 }
 
-func (s *Service) Recent(ctx context.Context, limit int64) ([]Summary, error) {
-	quizzes, err := s.q.ListRecentQuizzes(ctx, limit)
+type Filter struct {
+	TopicSlug string
+	Open      *bool
+	Limit     int64
+}
+
+func (s *Service) List(ctx context.Context, f Filter) ([]Summary, error) {
+	params := db.ListQuizzesParams{RowLimit: f.Limit}
+	if f.TopicSlug != "" {
+		params.TopicSlug = f.TopicSlug
+	}
+	if f.Open != nil {
+		params.Open = *f.Open
+	}
+	quizzes, err := s.q.ListQuizzes(ctx, params)
 	if err != nil {
 		return nil, err
 	}
@@ -360,6 +423,25 @@ func (s *Service) Recent(ctx context.Context, limit int64) ([]Summary, error) {
 		})
 	}
 	return out, nil
+}
+
+func (s *Service) SaveDraft(ctx context.Context, quizID, questionID int64, resp Response) error {
+	raw, err := json.Marshal(resp)
+	if err != nil {
+		return err
+	}
+	n, err := s.q.SaveQuizDraft(ctx, db.SaveQuizDraftParams{Draft: string(raw), QuizID: quizID, QuestionID: questionID})
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return httpx.Errorf(http.StatusNotFound, "question %d is not part of quiz %d", questionID, quizID)
+	}
+	return nil
+}
+
+func toHint(h db.Hint) Hint {
+	return Hint{ID: h.ID, Kind: h.Kind, Content: h.Content, CreatedAt: h.CreatedAt}
 }
 
 func result(q db.Question, a db.Answer) (Result, error) {

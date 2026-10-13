@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from "react-router"
+import { JobsIndicator, JobsWatcher } from "@/features/jobs"
 import { useInterfaceSync } from "@/features/settings"
 import { useI18n } from "@/i18n"
 import { cn } from "@/lib/utils"
@@ -32,15 +33,18 @@ function Shell() {
             {t(label)}
           </NavLink>
         ))}
+        <JobsIndicator className="mt-auto" />
       </aside>
+      <JobsWatcher />
 
       <main className="min-w-0 flex-1 pb-20 md:pb-0">
         <div className="mx-auto w-full max-w-5xl px-4 py-6 md:px-8">
+          <JobsIndicator className="mb-4 md:hidden" />
           <Outlet />
         </div>
       </main>
 
-      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-4 border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden">
         {navItems.map(({ to, label, icon: Icon, end }) => (
           <NavLink
             key={to}

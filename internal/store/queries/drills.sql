@@ -20,3 +20,6 @@ INSERT INTO drill_attempts (drill_id, code, passed, output) VALUES (?, ?, ?, ?) 
 
 -- name: GetLatestDrillAttempt :one
 SELECT * FROM drill_attempts WHERE drill_id = ? ORDER BY id DESC LIMIT 1;
+
+-- name: SaveDrillDraft :execrows
+UPDATE drills SET draft = ? WHERE id = ?;
