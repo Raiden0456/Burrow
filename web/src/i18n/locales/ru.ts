@@ -22,6 +22,8 @@ export const ru: Messages = {
   "errors.alreadyAnswered": "На этот вопрос уже есть ответ",
   "errors.noToolchain": "На сервере нет Go, поэтому дриллы не запускаются",
   "errors.hintLimit": "Подсказок к этому вопросу больше нет",
+  "errors.wallpaperTooLarge": "Картинка больше 15 МБ",
+  "errors.wallpaperNotImage": "Это не картинка",
   "errors.unknownTopic": "Неизвестная тема «{slug}»",
 
   "jobs.leaveHint": "Можно уйти со страницы: генерация продолжится в фоне, и мы сообщим, когда всё будет готово.",
@@ -277,5 +279,10 @@ export const ru: Messages = {
   "settings.interface.dark": "One Dark",
   "settings.interface.system": "Системная",
   "settings.interface.language": "Язык",
+  "settings.interface.wallpaper": "Фон",
+  "settings.interface.wallpaperChoose": "Выбрать картинку",
+  "settings.interface.wallpaperChange": "Сменить",
+  "settings.interface.wallpaperRemove": "Убрать",
+  "settings.interface.wallpaperDim": "Затемнение",
   "settings.interface.signOut": "Выйти",
 }

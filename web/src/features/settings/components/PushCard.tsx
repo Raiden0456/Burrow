@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, type ComponentProps } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { BellIcon, BellOffIcon, BellRingIcon } from "lucide-react"
 import { toast } from "sonner"
@@ -9,7 +9,7 @@ import { useI18n } from "@/i18n"
 import { settingsApi } from "../api"
 import { currentSubscription, pushSupported, subscribe } from "../utils/push"
 
-export function PushCard() {
+export function PushCard(props: ComponentProps<"div">) {
   const { t } = useI18n()
   const queryClient = useQueryClient()
   const info = useQuery({ queryKey: ["push"], queryFn: settingsApi.pushInfo })
@@ -49,7 +49,7 @@ export function PushCard() {
   })
 
   return (
-    <Card>
+    <Card {...props}>
       <CardHeader className="flex flex-row items-start gap-3">
         <IconChip icon={BellRingIcon} tone="yellow" />
         <div className="flex flex-col gap-1">

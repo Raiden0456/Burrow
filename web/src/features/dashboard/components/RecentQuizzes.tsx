@@ -1,3 +1,4 @@
+import type { ComponentProps } from "react"
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "react-router"
 import { HistoryIcon } from "lucide-react"
@@ -7,14 +8,14 @@ import { QuizKindBadge, quizApi } from "@/features/quiz"
 import { useCurriculum } from "@/features/topics"
 import { useI18n } from "@/i18n"
 
-export function RecentQuizzes() {
+export function RecentQuizzes(props: ComponentProps<"div">) {
   const { t, locale } = useI18n()
   const { topics } = useCurriculum()
   const quizzes = useQuery({ queryKey: ["quizzes", "recent"], queryFn: () => quizApi.list({ limit: 8 }) })
   if (!quizzes.data?.length) return null
 
   return (
-    <Card>
+    <Card {...props}>
       <CardHeader className="flex flex-row items-center gap-3">
         <IconChip icon={HistoryIcon} tone="cyan" />
         <CardTitle>{t("dashboard.recent.title")}</CardTitle>

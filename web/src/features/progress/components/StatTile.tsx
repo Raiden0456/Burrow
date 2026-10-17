@@ -1,9 +1,10 @@
+import type { ComponentProps } from "react"
 import type { LucideIcon } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { IconChip } from "@/components/IconChip"
 import type { Tone } from "@/lib/tones"
 
-type Props = {
+type Props = ComponentProps<"div"> & {
   icon: LucideIcon
   tone: Tone
   label: string
@@ -11,9 +12,9 @@ type Props = {
   hint?: string
 }
 
-export function StatTile({ icon, tone, label, value, hint }: Props) {
+export function StatTile({ icon, tone, label, value, hint, ...props }: Props) {
   return (
-    <Card size="sm">
+    <Card size="sm" {...props}>
       <CardContent className="flex items-start gap-3">
         <IconChip icon={icon} tone={tone} className="size-9" />
         <div className="min-w-0">

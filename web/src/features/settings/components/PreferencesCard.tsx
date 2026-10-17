@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react"
+import { useState, type FormEvent, type ComponentProps } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { GraduationCapIcon } from "lucide-react"
 import { toast } from "sonner"
@@ -14,13 +14,13 @@ import { useI18n } from "@/i18n"
 import { settingsApi } from "../api"
 import type { Preferences } from "../types/settings"
 
-export function PreferencesCard() {
+export function PreferencesCard(props: ComponentProps<"div">) {
   const prefs = useQuery({ queryKey: ["preferences"], queryFn: settingsApi.preferences })
   if (!prefs.data) return <Skeleton className="h-64 w-full" />
-  return <PreferencesForm initial={prefs.data} />
+  return <PreferencesForm initial={prefs.data} {...props} />
 }
 
-function PreferencesForm({ initial }: { initial: Preferences }) {
+function PreferencesForm({ initial, ...props }: { initial: Preferences } & ComponentProps<"div">) {
   const { t } = useI18n()
   const queryClient = useQueryClient()
   const [form, setForm] = useState(initial)
@@ -40,7 +40,7 @@ function PreferencesForm({ initial }: { initial: Preferences }) {
   }
 
   return (
-    <Card>
+    <Card {...props}>
       <CardHeader className="flex flex-row items-start gap-3">
         <IconChip icon={GraduationCapIcon} tone="green" />
         <div className="flex flex-col gap-1">

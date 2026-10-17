@@ -15,12 +15,28 @@ import (
 )
 
 const (
-	preferencesKey = "preferences"
-	interfaceKey   = "interface"
+	preferencesKey  = "preferences"
+	interfaceKey    = "interface"
+	maxWallpaperDim = 90
 )
 
 type Interface struct {
-	Language string `json:"language"`
+	Language     string `json:"language"`
+	WallpaperDim int    `json:"wallpaperDim"`
+}
+
+func DefaultInterface() Interface {
+	return Interface{WallpaperDim: 55}
+}
+
+func (ui Interface) Validate() error {
+	if ui.Language != "en" && ui.Language != "ru" {
+		return errors.New("language must be en or ru")
+	}
+	if ui.WallpaperDim < 0 || ui.WallpaperDim > maxWallpaperDim {
+		return fmt.Errorf("wallpaperDim must be between 0 and %d", maxWallpaperDim)
+	}
+	return nil
 }
 
 type Preferences struct {
@@ -96,7 +112,7 @@ func (s *Store) Preferences(ctx context.Context) (Preferences, error) {
 }
 
 func (s *Store) Interface(ctx context.Context) (Interface, error) {
-	var ui Interface
+	ui := DefaultInterface()
 	_, err := s.Get(ctx, interfaceKey, &ui)
 	return ui, err
 }
@@ -116,8 +132,8 @@ func (s *Store) Routes(mux *http.ServeMux) {
 		if err := httpx.Decode(r, &ui); err != nil {
 			return err
 		}
-		if ui.Language != "en" && ui.Language != "ru" {
-			return httpx.Errorf(http.StatusBadRequest, "language must be en or ru")
+		if err := ui.Validate(); err != nil {
+			return httpx.Errorf(http.StatusBadRequest, "%v", err)
 		}
 		if err := s.Put(r.Context(), interfaceKey, ui); err != nil {
 			return err

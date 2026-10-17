@@ -1,3 +1,4 @@
+import type { ComponentProps } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { WaypointsIcon } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -14,7 +15,7 @@ const tasks: { key: keyof Routing; label: MessageKey; hint: MessageKey }[] = [
   { key: "grade", label: "settings.routing.grade", hint: "settings.routing.gradeHint" },
 ]
 
-export function RoutingCard() {
+export function RoutingCard(props: ComponentProps<"div">) {
   const { t } = useI18n()
   const queryClient = useQueryClient()
   const providers = useQuery({ queryKey: ["providers"], queryFn: settingsApi.providers })
@@ -28,7 +29,7 @@ export function RoutingCard() {
   const current = routing.data
 
   return (
-    <Card>
+    <Card {...props}>
       <CardHeader className="flex flex-row items-start gap-3">
         <IconChip icon={WaypointsIcon} tone="cyan" />
         <div className="flex flex-col gap-1">

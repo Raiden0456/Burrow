@@ -1,3 +1,4 @@
+import type { ComponentProps } from "react"
 import { useMutation } from "@tanstack/react-query"
 import { useNavigate } from "react-router"
 import { RepeatIcon } from "lucide-react"
@@ -6,8 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { IconChip } from "@/components/IconChip"
 import { quizApi } from "@/features/quiz"
 import { useI18n } from "@/i18n"
+import { cn } from "@/lib/utils"
 
-export function ReviewCard({ due }: { due: number }) {
+export function ReviewCard({ due, ...props }: { due: number } & ComponentProps<"div">) {
   const { t } = useI18n()
   const navigate = useNavigate()
   const size = Math.min(due, 15)
@@ -17,7 +19,7 @@ export function ReviewCard({ due }: { due: number }) {
   })
 
   return (
-    <Card className="border-l-4 border-l-hue-cyan">
+    <Card {...props} className={cn("border-l-4 border-l-hue-cyan", props.className)}>
       <CardHeader className="flex flex-row items-start gap-3">
         <IconChip icon={RepeatIcon} tone="cyan" />
         <div className="flex flex-col gap-1">

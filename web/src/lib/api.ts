@@ -18,6 +18,8 @@ const codeMessages: Record<string, string> = {
   already_answered: "errors.alreadyAnswered",
   no_toolchain: "errors.noToolchain",
   hint_limit: "errors.hintLimit",
+  wallpaper_too_large: "errors.wallpaperTooLarge",
+  wallpaper_not_image: "errors.wallpaperNotImage",
 }
 
 type Method = "GET" | "POST" | "PUT" | "DELETE"
@@ -28,11 +30,12 @@ async function toApiError(res: Response): Promise<ApiError> {
 }
 
 export async function request<T>(method: Method, path: string, body?: unknown, signal?: AbortSignal): Promise<T> {
+  const isBlob = body instanceof Blob
   const res = await fetch(path, {
     method,
     signal,
-    headers: body === undefined ? undefined : { "Content-Type": "application/json" },
-    body: body === undefined ? undefined : JSON.stringify(body),
+    headers: body === undefined || isBlob ? undefined : { "Content-Type": "application/json" },
+    body: body === undefined ? undefined : isBlob ? body : JSON.stringify(body),
   })
   if (!res.ok) throw await toApiError(res)
   if (res.status === 204) return undefined as T

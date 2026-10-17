@@ -60,7 +60,7 @@ export function QuizPage() {
 
   return (
     <div className="max-md:pb-28">
-      <div className="sticky top-0 z-30 -mx-4 mb-4 flex items-center gap-2 bg-background/95 px-2 py-2 backdrop-blur md:hidden">
+      <div data-glass className="sticky top-0 z-30 -mx-4 mb-4 flex items-center gap-2 bg-background/95 px-2 py-2 backdrop-blur md:hidden">
         <Button asChild variant="ghost" size="icon" aria-label={t("quiz.exit")}>
           <Link to={exit}>
             <XIcon />

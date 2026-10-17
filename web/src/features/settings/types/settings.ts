@@ -47,6 +47,7 @@ export type Preferences = {
 
 export type InterfaceSettings = {
   language: string
+  wallpaperDim: number
 }
 
 export type PushInfo = {

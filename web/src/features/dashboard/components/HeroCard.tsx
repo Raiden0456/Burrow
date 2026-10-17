@@ -1,5 +1,7 @@
+import type { ComponentProps } from "react"
 import { FlameIcon } from "lucide-react"
 import { useI18n, type MessageKey } from "@/i18n"
+import { cn } from "@/lib/utils"
 
 function greetingKey(hour: number): MessageKey {
   if (hour < 5) return "dashboard.greeting.night"
@@ -8,11 +10,11 @@ function greetingKey(hour: number): MessageKey {
   return "dashboard.greeting.evening"
 }
 
-export function HeroCard({ streak, activeToday }: { streak: number; activeToday: boolean }) {
+export function HeroCard({ streak, activeToday, className, ...props }: { streak: number; activeToday: boolean } & ComponentProps<"div">) {
   const { t } = useI18n()
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-hue-blue/20 via-hue-purple/12 to-hue-cyan/15 p-6">
+    <div data-glass {...props} className={cn("relative overflow-hidden rounded-2xl border bg-gradient-to-br from-hue-blue/20 via-hue-purple/12 to-hue-cyan/15 p-6", className)}>
       <div className="pointer-events-none absolute -top-16 -right-10 size-48 rounded-full bg-hue-purple/20 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-20 left-1/3 size-48 rounded-full bg-hue-blue/20 blur-3xl" />
       <div className="relative flex flex-wrap items-center justify-between gap-4">

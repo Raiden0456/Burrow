@@ -1,3 +1,4 @@
+import type { ComponentProps } from "react"
 import { Link } from "react-router"
 import { LayersIcon } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -6,12 +7,12 @@ import { MasteryBar, type TopicStat } from "@/features/progress"
 import type { Module } from "@/features/topics"
 import { useI18n } from "@/i18n"
 
-export function ModulesCard({ modules, stats }: { modules: Module[]; stats: TopicStat[] }) {
+export function ModulesCard({ modules, stats, ...props }: { modules: Module[]; stats: TopicStat[] } & ComponentProps<"div">) {
   const { t } = useI18n()
   const mastery = new Map(stats.map((s) => [s.slug, s.mastery]))
 
   return (
-    <Card>
+    <Card {...props}>
       <CardHeader className="flex flex-row items-center gap-3">
         <IconChip icon={LayersIcon} tone="orange" />
         <CardTitle>{t("dashboard.modules.title")}</CardTitle>

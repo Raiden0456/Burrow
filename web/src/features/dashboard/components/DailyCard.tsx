@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, type ComponentProps } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, useNavigate } from "react-router"
 import { CalendarCheckIcon, Loader2Icon } from "lucide-react"
@@ -9,9 +9,10 @@ import { ErrorAlert } from "@/components/ErrorAlert"
 import { IconChip } from "@/components/IconChip"
 import { useJob, useRunningJob } from "@/features/jobs"
 import { useI18n } from "@/i18n"
+import { cn } from "@/lib/utils"
 import { dashboardApi } from "../api"
 
-export function DailyCard() {
+export function DailyCard(props: ComponentProps<"div">) {
   const { t, locale } = useI18n()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
@@ -41,7 +42,7 @@ export function DailyCard() {
   const description = !d ? " " : d.quizId ? t("dashboard.daily.ready") : d.enabled ? t("dashboard.daily.scheduled", { time: time ?? "" }) : t("dashboard.daily.off")
 
   return (
-    <Card className="border-l-4 border-l-hue-blue">
+    <Card {...props} className={cn("border-l-4 border-l-hue-blue", props.className)}>
       <CardHeader className="flex flex-row items-start gap-3">
         <IconChip icon={CalendarCheckIcon} tone="blue" />
         <div className="flex flex-col gap-1">

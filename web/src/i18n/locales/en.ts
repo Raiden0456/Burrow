@@ -23,6 +23,8 @@ export const en = {
   "errors.alreadyAnswered": "This question has already been answered",
   "errors.noToolchain": "The Go toolchain is not available on the server, so drills cannot run",
   "errors.hintLimit": "No more hints for this question",
+  "errors.wallpaperTooLarge": "The image is larger than 15 MB",
+  "errors.wallpaperNotImage": "This is not an image",
   "errors.unknownTopic": "Unknown topic \"{slug}\"",
 
   "jobs.leaveHint": "You can leave this page: generation continues in the background and you will be notified when it is ready.",
@@ -261,6 +263,11 @@ export const en = {
   "settings.interface.dark": "One Dark",
   "settings.interface.system": "System",
   "settings.interface.language": "Language",
+  "settings.interface.wallpaper": "Background",
+  "settings.interface.wallpaperChoose": "Choose image",
+  "settings.interface.wallpaperChange": "Change",
+  "settings.interface.wallpaperRemove": "Remove",
+  "settings.interface.wallpaperDim": "Dimming",
   "settings.interface.signOut": "Sign out",
 } satisfies Record<string, Message>
 

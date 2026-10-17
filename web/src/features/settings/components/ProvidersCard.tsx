@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, type ComponentProps } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { BotIcon, Loader2Icon, PencilIcon, PlugZapIcon, PlusIcon, Trash2Icon } from "lucide-react"
 import { toast } from "sonner"
@@ -17,7 +17,7 @@ import { ProviderDialog } from "./ProviderDialog"
 
 const kindTone = { anthropic: "orange", openai: "green", acp: "blue" } as const satisfies Record<ProviderKind, string>
 
-export function ProvidersCard() {
+export function ProvidersCard(props: ComponentProps<"div">) {
   const { t } = useI18n()
   const queryClient = useQueryClient()
   const providers = useQuery({ queryKey: ["providers"], queryFn: settingsApi.providers })
@@ -45,7 +45,7 @@ export function ProvidersCard() {
   }
 
   return (
-    <Card>
+    <Card {...props}>
       <CardHeader className="flex flex-row items-start gap-3">
         <IconChip icon={BotIcon} tone="blue" />
         <div className="flex flex-1 flex-col gap-1">

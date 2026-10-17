@@ -10,6 +10,7 @@ import { ActivityGrid, StatTile, useProgress } from "@/features/progress"
 import { settingsApi } from "@/features/settings"
 import { useCurriculum } from "@/features/topics"
 import { useI18n } from "@/i18n"
+import { enter } from "@/lib/enter"
 import { ContinueCard } from "./ContinueCard"
 import { DailyCard } from "./DailyCard"
 import { HeroCard } from "./HeroCard"
@@ -31,10 +32,10 @@ export function DashboardPage() {
   const p = progress.data
   return (
     <div className="flex flex-col gap-6">
-      <HeroCard streak={p.streak} activeToday={p.activeToday} />
+      <HeroCard {...enter(0)} streak={p.streak} activeToday={p.activeToday} />
 
       {providers.data?.length === 0 && (
-        <Alert className="border-hue-yellow/40 bg-hue-yellow/10">
+        <Alert {...enter(1)} className="enter border-hue-yellow/40 bg-hue-yellow/10">
           <SparklesIcon className="text-hue-yellow" />
           <AlertTitle>{t("dashboard.noProvider.title")}</AlertTitle>
           <AlertDescription>
@@ -49,22 +50,22 @@ export function DashboardPage() {
       )}
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatTile icon={FlameIcon} tone="orange" label={t("dashboard.stat.streak")} value={p.streak} hint={t("dashboard.stat.streakDays", { count: p.streak })} />
-        <StatTile icon={ZapIcon} tone="yellow" label={t("dashboard.stat.answersToday")} value={p.answersToday} hint={t("dashboard.stat.total", { count: p.totalAnswers })} />
-        <StatTile icon={TargetIcon} tone="green" label={t("dashboard.stat.accuracy")} value={p.accuracy7d === null ? "—" : `${Math.round(p.accuracy7d * 100)}%`} />
-        <StatTile icon={CodeIcon} tone="purple" label={t("dashboard.stat.drills")} value={p.drillsSolved} />
+        <StatTile {...enter(1)} icon={FlameIcon} tone="orange" label={t("dashboard.stat.streak")} value={p.streak} hint={t("dashboard.stat.streakDays", { count: p.streak })} />
+        <StatTile {...enter(2)} icon={ZapIcon} tone="yellow" label={t("dashboard.stat.answersToday")} value={p.answersToday} hint={t("dashboard.stat.total", { count: p.totalAnswers })} />
+        <StatTile {...enter(3)} icon={TargetIcon} tone="green" label={t("dashboard.stat.accuracy")} value={p.accuracy7d === null ? "—" : `${Math.round(p.accuracy7d * 100)}%`} />
+        <StatTile {...enter(4)} icon={CodeIcon} tone="purple" label={t("dashboard.stat.drills")} value={p.drillsSolved} />
       </div>
 
-      <UnfinishedQuizzes />
+      <UnfinishedQuizzes {...enter(5)} />
 
       <div className="grid gap-6 md:grid-cols-2">
-        <DailyCard />
-        <ReviewCard due={p.dueCount} />
+        <DailyCard {...enter(5)} />
+        <ReviewCard {...enter(6)} due={p.dueCount} />
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <ContinueCard modules={curriculum.modules} stats={p.topics} />
-        <Card>
+        <ContinueCard {...enter(7)} modules={curriculum.modules} stats={p.topics} />
+        <Card {...enter(8)}>
           <CardHeader className="flex flex-row items-center gap-3">
             <IconChip icon={CalendarDaysIcon} tone="green" />
             <CardTitle>{t("dashboard.activity.title")}</CardTitle>
@@ -75,8 +76,8 @@ export function DashboardPage() {
         </Card>
       </div>
 
-      <ModulesCard modules={curriculum.modules} stats={p.topics} />
-      <RecentQuizzes />
+      <ModulesCard {...enter(9)} modules={curriculum.modules} stats={p.topics} />
+      <RecentQuizzes {...enter(10)} />
     </div>
   )
 }

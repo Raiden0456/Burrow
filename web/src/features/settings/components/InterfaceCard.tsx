@@ -1,3 +1,4 @@
+import type { ComponentProps } from "react"
 import { useMutation } from "@tanstack/react-query"
 import { LanguagesIcon, LogOutIcon, MonitorIcon, MoonIcon, PaletteIcon, SunIcon } from "lucide-react"
 import { useTheme } from "next-themes"
@@ -7,7 +8,8 @@ import { Label } from "@/components/ui/label"
 import { IconChip } from "@/components/IconChip"
 import { authApi } from "@/features/auth"
 import { locales, useI18n, type MessageKey } from "@/i18n"
-import { useChangeLanguage } from "../hooks/useChangeLanguage"
+import { useInterface } from "../hooks/useInterface"
+import { WallpaperField } from "./WallpaperField"
 
 const themes: { value: string; label: MessageKey; icon: typeof SunIcon }[] = [
   { value: "light", label: "settings.interface.light", icon: SunIcon },
@@ -17,17 +19,17 @@ const themes: { value: string; label: MessageKey; icon: typeof SunIcon }[] = [
 
 const languageNames = { en: "English", ru: "Русский" }
 
-export function InterfaceCard() {
+export function InterfaceCard(props: ComponentProps<"div">) {
   const { t, locale } = useI18n()
   const { theme, setTheme } = useTheme()
-  const changeLanguage = useChangeLanguage()
+  const { setLanguage } = useInterface()
   const logout = useMutation({
     mutationFn: authApi.logout,
     onSuccess: () => window.location.assign("/login"),
   })
 
   return (
-    <Card>
+    <Card {...props}>
       <CardHeader className="flex flex-row items-center gap-3">
         <IconChip icon={PaletteIcon} tone="purple" />
         <CardTitle>{t("settings.interface.title")}</CardTitle>
@@ -51,12 +53,13 @@ export function InterfaceCard() {
           </Label>
           <div className="flex w-fit gap-1 rounded-lg border p-1 max-md:grid max-md:w-full max-md:grid-cols-2">
             {locales.map((l) => (
-              <Button key={l} size="sm" variant={locale === l ? "secondary" : "ghost"} onClick={() => changeLanguage.mutate(l)}>
+              <Button key={l} size="sm" variant={locale === l ? "secondary" : "ghost"} onClick={() => setLanguage(l)}>
                 {languageNames[l]}
               </Button>
             ))}
           </div>
         </div>
+        <WallpaperField />
         <div>
           <Button variant="outline" onClick={() => logout.mutate()} className="max-md:w-full">
             <LogOutIcon />

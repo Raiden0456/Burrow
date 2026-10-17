@@ -8,6 +8,7 @@ import { ErrorAlert } from "@/components/ErrorAlert"
 import { useJobs } from "@/features/jobs"
 import { MasteryBar, useProgress } from "@/features/progress"
 import { useI18n } from "@/i18n"
+import { enter } from "@/lib/enter"
 import { topicsApi } from "../api"
 import { useCurriculum } from "../hooks/useCurriculum"
 import { LessonAction } from "./LessonAction"
@@ -30,7 +31,7 @@ export function TopicsPage() {
       <PageHeader title={t("topics.title")} description={t("topics.description")} />
       <div className="flex flex-col gap-6">
         {curriculum.modules.map((module, mi) => (
-          <Card key={module.slug}>
+          <Card key={module.slug} {...enter(mi + 1)}>
             <CardHeader className="flex flex-row items-center gap-3">
               <span className="flex size-8 items-center justify-center rounded-lg bg-primary/12 text-sm font-semibold text-primary">{mi + 1}</span>
               <CardTitle>{module.title}</CardTitle>

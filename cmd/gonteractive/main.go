@@ -26,6 +26,7 @@ import (
 	"github.com/raiden0456/gonteractive/internal/settings"
 	"github.com/raiden0456/gonteractive/internal/store"
 	"github.com/raiden0456/gonteractive/internal/store/db"
+	"github.com/raiden0456/gonteractive/internal/wallpaper"
 	"github.com/raiden0456/gonteractive/web"
 )
 
@@ -83,6 +84,7 @@ func run() error {
 		web.Dist(),
 		cur,
 		settingsStore,
+		wallpaper.New(cfg.DataDir),
 		providerService,
 		progressService,
 		jobManager,

@@ -1,3 +1,4 @@
+import type { ComponentProps } from "react"
 import { Link } from "react-router"
 import { ArrowRightIcon, CompassIcon } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -6,7 +7,7 @@ import { MasteryBar, type TopicStat } from "@/features/progress"
 import type { Module } from "@/features/topics"
 import { useI18n } from "@/i18n"
 
-export function ContinueCard({ modules, stats }: { modules: Module[]; stats: TopicStat[] }) {
+export function ContinueCard({ modules, stats, ...props }: { modules: Module[]; stats: TopicStat[] } & ComponentProps<"div">) {
   const { t } = useI18n()
   const all = modules.flatMap((m) => m.topics)
   const titles = new Map(all.map((topic) => [topic.slug, topic.title]))
@@ -15,7 +16,7 @@ export function ContinueCard({ modules, stats }: { modules: Module[]; stats: Top
   const next = all.find((topic) => !seen.has(topic.slug))
 
   return (
-    <Card>
+    <Card {...props}>
       <CardHeader className="flex flex-row items-center gap-3">
         <IconChip icon={CompassIcon} tone="purple" />
         <CardTitle>{t("dashboard.continue.title")}</CardTitle>
