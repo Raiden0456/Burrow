@@ -221,10 +221,12 @@
     --tw-prose-td-borders: var(--border);
 }
 
-@utility text-legible {
-  text-shadow:
-    0 1px 2px color-mix(in oklab, var(--background) 85%, transparent),
-    0 0 14px color-mix(in oklab, var(--background) 65%, transparent);
+.dark [data-wallpaper] .text-legible {
+  color: rgb(255 255 255 / 0.88);
+}
+
+.dark [data-wallpaper] .text-legible .text-muted-foreground {
+  color: rgb(255 255 255 / 0.72);
 }
 
 @keyframes enter {
