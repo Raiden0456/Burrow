@@ -14,21 +14,17 @@ export function HeroCard({ streak, activeToday, className, ...props }: { streak:
   const { t } = useI18n()
 
   return (
-    <div data-glass {...props} className={cn("relative overflow-hidden rounded-2xl border bg-gradient-to-br from-hue-blue/20 via-hue-purple/12 to-hue-cyan/15 p-6", className)}>
-      <div className="pointer-events-none absolute -top-16 -right-10 size-48 rounded-full bg-hue-purple/20 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-20 left-1/3 size-48 rounded-full bg-hue-blue/20 blur-3xl" />
-      <div className="relative flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">{t(greetingKey(new Date().getHours()))}</h1>
-          <p className="mt-1 text-sm text-muted-foreground">{activeToday ? t("dashboard.subtitle.active") : t("dashboard.subtitle.idle")}</p>
-        </div>
-        {streak > 0 && (
-          <div className="flex items-center gap-2 rounded-full bg-hue-orange/15 px-3 py-1.5 text-sm font-medium text-hue-orange">
-            <FlameIcon className="size-4" />
-            {t("dashboard.streakBadge", { count: streak })}
-          </div>
-        )}
+    <div {...props} className={cn("flex flex-wrap items-center justify-between gap-4", className)}>
+      <div className="text-legible">
+        <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">{t(greetingKey(new Date().getHours()))}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{activeToday ? t("dashboard.subtitle.active") : t("dashboard.subtitle.idle")}</p>
       </div>
+      {streak > 0 && (
+        <div className="flex items-center gap-2 rounded-full bg-hue-orange/15 px-3 py-1.5 text-sm font-medium text-hue-orange">
+          <FlameIcon className="size-4" />
+          {t("dashboard.streakBadge", { count: streak })}
+        </div>
+      )}
     </div>
   )
 }
