@@ -22,7 +22,7 @@ export function HelpPanel({ hints, streamingText, error }: Props) {
         .slice()
         .reverse()
         .map((item, i) => (
-          <div key={item.key} className="rounded-lg border border-hue-yellow/40 bg-hue-yellow/8 p-3">
+          <div key={item.key} data-glass className="rounded-lg border border-hue-yellow/40 bg-hue-yellow/8 p-3">
             <div className="mb-1 flex items-center gap-1.5 text-xs font-medium tracking-wide text-hue-yellow uppercase">
               <LifeBuoyIcon className="size-3.5" />
               {t("drills.helpN", { n: items.length - i })}

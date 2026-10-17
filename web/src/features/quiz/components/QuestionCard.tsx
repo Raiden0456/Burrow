@@ -52,7 +52,7 @@ export function QuestionCard({ quizId, question, topicTitle, submitting, onSubmi
     )
 
   return (
-    <Card className="max-md:gap-5 max-md:bg-transparent max-md:py-0 max-md:shadow-none max-md:ring-0 max-md:[--card-spacing:0px]">
+    <Card className="max-md:gap-5 not-wallpaper:max-md:bg-transparent not-wallpaper:max-md:py-0 not-wallpaper:max-md:shadow-none not-wallpaper:max-md:ring-0 not-wallpaper:max-md:[--card-spacing:0px]">
       <CardHeader className="flex flex-wrap gap-2">
         {topicTitle && <Badge variant="outline">{topicTitle}</Badge>}
         <Badge variant="secondary">{t(`quiz.kind.${question.kind}`)}</Badge>

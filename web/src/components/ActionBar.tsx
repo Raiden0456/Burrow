@@ -1,8 +1,9 @@
 import type { ReactNode } from "react"
+import { createPortal } from "react-dom"
 import { cn } from "@/lib/utils"
 
 export function ActionBar({ children, className }: { children: ReactNode; className?: string }) {
-  return (
+  return createPortal(
     <div
       data-glass
       className={cn(
@@ -11,6 +12,7 @@ export function ActionBar({ children, className }: { children: ReactNode; classN
       )}
     >
       {children}
-    </div>
+    </div>,
+    document.body,
   )
 }

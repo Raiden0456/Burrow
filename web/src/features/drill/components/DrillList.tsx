@@ -56,7 +56,7 @@ export function DrillList({ slug }: { slug: string }) {
       {drills.error && <ErrorAlert error={drills.error} />}
       {drills.data?.length === 0 && !generating && <p className="text-sm text-muted-foreground">{t("drills.empty")}</p>}
       {!!drills.data?.length && (
-        <div className="flex flex-col divide-y rounded-lg border">
+        <div data-glass className="flex flex-col divide-y overflow-hidden rounded-lg border">
           {drills.data.map((d) => (
             <Link key={d.id} to={`/drills/${d.id}`} className="flex items-center gap-3 px-3 py-2.5 text-sm transition-colors hover:bg-muted/60 pointer-coarse:py-3.5">
               {d.solved ? <CheckCircle2Icon className="size-4 text-success" /> : <CircleIcon className="size-4 text-muted-foreground" />}

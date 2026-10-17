@@ -94,7 +94,7 @@ function DrillWorkspace({ drill }: { drill: Drill }) {
             <ChevronLeftIcon />
           </Link>
         </Button>
-        <Link to={`/topics/${drill.topicSlug}`} className="hidden items-center gap-1 text-sm text-muted-foreground hover:text-foreground md:inline-flex">
+        <Link to={`/topics/${drill.topicSlug}`} className="hidden items-center gap-1 text-sm text-muted-foreground hover:text-foreground md:inline-flex wallpaper:text-legible">
           <ChevronLeftIcon className="size-4" />
           {t("common.backToTopic")}
         </Link>
@@ -102,7 +102,7 @@ function DrillWorkspace({ drill }: { drill: Drill }) {
           <SaveIndicator state={saveState} />
         </div>
       </div>
-      <div className="mb-4 flex flex-wrap items-center gap-2">
+      <div className="mb-4 flex flex-wrap items-center gap-2 wallpaper:text-legible">
         <h1 className="text-xl font-semibold tracking-tight md:text-2xl">{drill.title}</h1>
         <DifficultyBadge level={drill.difficulty} />
         {drill.solved && <span className="rounded-full bg-success/15 px-2 py-0.5 text-xs font-medium text-success">{t("drills.solved")}</span>}
@@ -130,7 +130,7 @@ function DrillWorkspace({ drill }: { drill: Drill }) {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className={cn("min-w-0", hidden("task"))}>
+        <div data-glass className={cn("min-w-0 wallpaper:rounded-xl wallpaper:p-5", hidden("task"))}>
           <Markdown className="prose-sm">{drill.description}</Markdown>
         </div>
 

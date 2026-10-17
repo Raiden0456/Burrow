@@ -80,7 +80,7 @@ export function QuizPage() {
           <QuizStepper questions={data.questions} current={index ?? -1} onSelect={setCurrent} />
         </div>
       </div>
-      <h1 className="mb-3 text-lg font-semibold md:hidden">{topicTitle ?? t(`quiz.title.${data.kind}`)}</h1>
+      <h1 className="mb-3 text-lg font-semibold md:hidden wallpaper:text-legible">{topicTitle ?? t(`quiz.title.${data.kind}`)}</h1>
       {index === null ? (
         <QuizSummary quiz={data} onReview={setCurrent} />
       ) : (

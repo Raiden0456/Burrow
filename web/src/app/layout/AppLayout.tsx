@@ -1,3 +1,4 @@
+import { useEffect } from "react"
 import { NavLink, Outlet } from "react-router"
 import { JobsIndicator, JobsWatcher } from "@/features/jobs"
 import { useInterface, useInterfaceSync } from "@/features/settings"
@@ -15,8 +16,13 @@ function Shell() {
   const { dim } = useInterface()
   const { version } = useWallpaper()
 
+  useEffect(() => {
+    document.documentElement.toggleAttribute("data-wallpaper", !!version)
+    return () => document.documentElement.removeAttribute("data-wallpaper")
+  }, [version])
+
   return (
-    <div data-wallpaper={version ? "" : undefined} className="flex min-h-svh">
+    <div className="flex min-h-svh">
       {version && <WallpaperBackdrop version={version} dim={dim} />}
       <aside data-glass className="sticky top-0 hidden h-svh w-56 shrink-0 flex-col gap-1 border-r border-sidebar-border bg-sidebar p-3 md:flex">
         <div className="mb-4 flex items-center gap-2 px-2 pt-2 font-semibold">

@@ -23,12 +23,12 @@ export function TopicPage() {
 
   return (
     <>
-      <Link to="/topics" className="mb-3 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+      <Link to="/topics" className="mb-3 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground wallpaper:text-legible">
         <ChevronLeftIcon className="size-4" />
         {topic.module}
       </Link>
       <PageHeader title={topic.title} />
-      <div className="mb-6 flex flex-col gap-3 rounded-xl border bg-gradient-to-br from-hue-blue/10 to-hue-purple/5 p-4">
+      <div data-glass className="mb-6 flex flex-col gap-3 rounded-xl border bg-gradient-to-br from-hue-blue/10 to-hue-purple/5 p-4">
         <MasteryBar value={byTopic.get(slug)?.mastery ?? 0} />
         <ul className="space-y-1.5 text-sm text-muted-foreground">
           {topic.objectives.map((o) => (

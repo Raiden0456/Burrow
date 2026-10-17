@@ -41,10 +41,10 @@ export function ChatThreadView({ id }: { id: number }) {
             <ChevronLeftIcon />
           </Link>
         </Button>
-        <h2 className="min-w-0 truncate text-lg font-semibold">{thread.data.thread.title || t("chat.newChat")}</h2>
+        <h2 className="min-w-0 truncate text-lg font-semibold wallpaper:text-legible">{thread.data.thread.title || t("chat.newChat")}</h2>
       </div>
       {thread.data.thread.context && (
-        <details className="mb-4 rounded-lg border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+        <details data-glass className="mb-4 rounded-lg border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
           <summary className="cursor-pointer select-none">{t("chat.context")}</summary>
           <pre className="mt-2 whitespace-pre-wrap font-sans">{thread.data.thread.context}</pre>
         </details>
@@ -65,7 +65,7 @@ export function ChatThreadView({ id }: { id: number }) {
         {count === 0 && !streaming && <p className="text-sm text-muted-foreground">{t("chat.empty")}</p>}
         <div ref={bottom} />
       </div>
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur md:sticky md:mt-4 md:border-0 md:bg-background md:px-0 md:pt-2 md:pb-4 md:backdrop-blur-none">
+      <div data-glass className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur md:sticky md:mt-4 md:rounded-xl md:border-0 md:bg-background md:px-0 md:pt-2 md:pb-4 md:backdrop-blur-none">
         <Composer disabled={streaming} onSend={send} />
       </div>
     </div>

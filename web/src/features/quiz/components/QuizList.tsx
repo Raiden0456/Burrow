@@ -17,7 +17,7 @@ export function QuizList({ filter, empty }: { filter: QuizFilter; empty?: string
   if (!quizzes.data?.length) return empty ? <p className="text-sm text-muted-foreground">{empty}</p> : null
 
   return (
-    <div className="flex flex-col divide-y rounded-lg border">
+    <div data-glass className="flex flex-col divide-y overflow-hidden rounded-lg border">
       {quizzes.data.map((q) => {
         const open = q.completedAt === null
         const title = q.topicSlug

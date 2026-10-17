@@ -27,7 +27,7 @@ export function QuizSummary({ quiz, onReview }: { quiz: Quiz; onReview: (index: 
             </div>
           </div>
         </div>
-        <div className="flex flex-col divide-y rounded-lg border">
+        <div data-glass className="flex flex-col divide-y overflow-hidden rounded-lg border">
           {quiz.questions.map((q, i) => {
             const r = q.result
             const Icon = r?.correct ? CheckCircle2Icon : r && r.score > 0 ? CircleAlertIcon : XCircleIcon

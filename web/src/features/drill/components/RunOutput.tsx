@@ -22,6 +22,7 @@ export function RunOutput({ result }: { result: RunResult }) {
         {result.durationMs > 0 && <span className="font-normal text-muted-foreground">· {(result.durationMs / 1000).toFixed(1)}s</span>}
       </div>
       <pre
+        data-glass
         className={cn(
           "max-h-80 overflow-auto rounded-lg border bg-muted/40 p-3 font-mono text-xs whitespace-pre-wrap",
           result.passed ? "border-success/40" : "border-destructive/40",

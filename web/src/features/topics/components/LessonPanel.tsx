@@ -44,7 +44,9 @@ export function LessonPanel({ slug }: { slug: string }) {
 
       {content ? (
         <>
-          <Markdown>{content}</Markdown>
+          <div data-glass className="wallpaper:rounded-xl wallpaper:p-5">
+            <Markdown>{content}</Markdown>
+          </div>
           {running && <Skeleton className="h-4 w-1/3" />}
           {!running && (
             <div>
