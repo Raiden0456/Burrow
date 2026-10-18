@@ -106,7 +106,7 @@ func (s *Scheduler) unsubscribe(w http.ResponseWriter, r *http.Request) error {
 
 func (s *Scheduler) testPush(w http.ResponseWriter, r *http.Request) error {
 	sent, err := s.pusher.Notify(r.Context(), Notification{
-		Title: "Gonteractive",
+		Title: "Burrow",
 		Body:  s.messages(r.Context()).testBody,
 		URL:   "/",
 	})

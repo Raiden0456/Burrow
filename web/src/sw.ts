@@ -16,7 +16,7 @@ registerRoute(new NavigationRoute(createHandlerBoundToURL("index.html"), { denyl
 self.addEventListener("push", (event) => {
   const data: PushPayload = event.data?.json() ?? {}
   event.waitUntil(
-    self.registration.showNotification(data.title ?? "Gonteractive", {
+    self.registration.showNotification(data.title ?? "Burrow", {
       body: data.body,
       icon: "/pwa-192x192.png",
       badge: "/pwa-64x64.png",

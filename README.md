@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="web/public/logo.svg" width="96" alt="Gonteractive logo">
+  <img src="web/public/logo.svg" width="96" alt="Burrow logo">
 </p>
 
-<h1 align="center">Gonteractive</h1>
+<h1 align="center">Burrow</h1>
 
 <p align="center">
   A self-hosted, AI-powered tutor for learning Go.<br>

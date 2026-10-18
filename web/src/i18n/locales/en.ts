@@ -248,7 +248,7 @@ export const en = {
   "settings.push.title": "Notifications",
   "settings.push.description": "Get pinged when the daily quiz is ready.",
   "settings.push.devices": { one: "{count} device subscribed.", other: "{count} devices subscribed." },
-  "settings.push.unsupported": "Push is not supported here. On iPhone/iPad, add Gonteractive to the Home Screen and open it from there.",
+  "settings.push.unsupported": "Push is not supported here. On iPhone/iPad, add Burrow to the Home Screen and open it from there.",
   "settings.push.noWorker": "The service worker is not registered yet. Reload the page and try again.",
   "settings.push.denied": "Notification permission was not granted.",
   "settings.push.enable": "Enable on this device",

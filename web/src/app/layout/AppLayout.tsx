@@ -27,7 +27,7 @@ function Shell() {
       <aside data-glass className="sticky top-0 hidden h-svh w-56 shrink-0 flex-col gap-1 border-r border-sidebar-border bg-sidebar p-3 md:flex">
         <div className="mb-4 flex items-center gap-2 px-2 pt-2 font-semibold">
           <img src="/logo.svg" alt="" className="size-7" />
-          <span className="bg-gradient-to-r from-hue-blue to-hue-purple bg-clip-text text-transparent">Gonteractive</span>
+          <span className="bg-gradient-to-r from-hue-blue to-hue-purple bg-clip-text text-transparent">Burrow</span>
         </div>
         {navItems.map(({ to, label, icon: Icon, end }) => (
           <NavLink

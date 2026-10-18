@@ -1,4 +1,6 @@
-# Gonteractive
+# Burrow
+
+Shown to users as **Burrow**; the repo, Go module, image and env names still say `gonteractive`.
 
 Self-hosted, single-user PWA for learning Go: curriculum topics with AI-generated lessons, quizzes (single/multi choice + AI-graded open questions), coding drills verified with `go test`, FSRS spaced repetition, a daily quiz with Web Push, and an "ask anything" chat. Everything AI goes through pluggable providers.
 

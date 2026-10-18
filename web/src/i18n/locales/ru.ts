@@ -259,7 +259,7 @@ export const ru: Messages = {
     many: "Подписано {count} устройств.",
     other: "Подписано {count} устройства.",
   },
-  "settings.push.unsupported": "Пуши здесь не поддерживаются. На iPhone/iPad добавьте Gonteractive на экран «Домой» и откройте оттуда.",
+  "settings.push.unsupported": "Пуши здесь не поддерживаются. На iPhone/iPad добавьте Burrow на экран «Домой» и откройте оттуда.",
   "settings.push.noWorker": "Service worker ещё не зарегистрирован. Перезагрузите страницу и попробуйте снова.",
   "settings.push.denied": "Разрешение на уведомления не выдано.",
   "settings.push.enable": "Включить на этом устройстве",

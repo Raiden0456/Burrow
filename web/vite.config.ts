@@ -18,8 +18,8 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },
       manifest: {
-        name: "Gonteractive",
-        short_name: "Gonteractive",
+        name: "Burrow",
+        short_name: "Burrow",
         description: "Your personal AI tutor for Go",
         theme_color: "#0f172a",
         background_color: "#ffffff",

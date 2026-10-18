@@ -31,7 +31,7 @@ export function LoginPage() {
       <Card className="w-full max-w-sm">
         <CardHeader className="items-center text-center">
           <img src="/logo.svg" alt="" className="mx-auto mb-2 size-12" />
-          <CardTitle className="text-xl">Gonteractive</CardTitle>
+          <CardTitle className="text-xl">Burrow</CardTitle>
           <CardDescription>{t("auth.tagline")}</CardDescription>
         </CardHeader>
         <CardContent>
