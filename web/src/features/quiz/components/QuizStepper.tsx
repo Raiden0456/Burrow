@@ -24,7 +24,7 @@ export function QuizStepper({ questions, current, onSelect, className }: Props) 
           <span
             className={cn(
               "block h-2 w-8 rounded-full bg-muted transition-colors max-md:w-full",
-              q.result && (q.result.correct ? "bg-success" : q.result.score > 0 ? "bg-warning" : "bg-destructive"),
+              q.result && (q.result.correct ? "bg-success-solid" : q.result.score > 0 ? "bg-warning-solid" : "bg-destructive"),
               i === current && "ring-2 ring-ring ring-offset-2 ring-offset-background",
             )}
           />

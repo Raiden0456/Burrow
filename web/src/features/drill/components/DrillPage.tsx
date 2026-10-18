@@ -122,7 +122,7 @@ function DrillWorkspace({ drill }: { drill: Drill }) {
             >
               {p.label}
               {p.value === "result" && result && (
-                <span className={cn("absolute top-2 right-3 size-2 rounded-full", result.passed ? "bg-success" : "bg-destructive")} />
+                <span className={cn("absolute top-2 right-3 size-2 rounded-full", result.passed ? "bg-success-solid" : "bg-destructive")} />
               )}
             </button>
           ))}
