@@ -82,7 +82,7 @@ docker compose up -d --build
 
 CasaOS imports only the first service of a compose file and cannot build images, so it uses a prebuilt image and a single container. You add HTTPS with Tailscale on the host.
 
-1. Publish the image. Pushing to `main` runs [`.github/workflows/docker.yml`](.github/workflows/docker.yml), which builds `ghcr.io/<owner>/gonteractive` for amd64 and arm64. On the first run, open the package on GitHub (**Packages → gonteractive → Package settings**) and change its visibility to **Public**, so the server can pull it without logging in.
+1. Publish the image. Pushing to `main` runs [`.github/workflows/docker.yml`](.github/workflows/docker.yml), which builds `ghcr.io/<owner>/burrow` for amd64 and arm64. On the first run, open the package on GitHub (**Packages → burrow → Package settings**) and change its visibility to **Public**, so the server can pull it without logging in.
 2. In CasaOS, open **App Store → Custom Install → Import**. Paste [`deploy/casaos/docker-compose.yml`](deploy/casaos/docker-compose.yml), then set `APP_PASSWORD` and `TZ` and install. The app listens on port `8484`, and its data lives in `/DATA/AppData/gonteractive`.
 3. To get HTTPS for the PWA and push notifications, run this on the server (which must be in your tailnet):
    ```bash

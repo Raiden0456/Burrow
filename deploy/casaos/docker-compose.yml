@@ -1,7 +1,7 @@
 name: gonteractive
 services:
   gonteractive:
-    image: ghcr.io/raiden0456/gonteractive:latest
+    image: ghcr.io/raiden0456/burrow:latest
     container_name: gonteractive
     network_mode: bridge
     restart: unless-stopped
