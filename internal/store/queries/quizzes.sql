@@ -1,5 +1,5 @@
 -- name: CreateQuiz :one
-INSERT INTO quizzes (kind, topic_slug, daily_date) VALUES (?, ?, ?) RETURNING *;
+INSERT INTO quizzes (kind, topic_slug, daily_date, checkpoint) VALUES (?, ?, ?, ?) RETURNING *;
 
 -- name: AddQuizItem :exec
 INSERT INTO quiz_items (quiz_id, position, question_id) VALUES (?, ?, ?);

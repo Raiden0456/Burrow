@@ -87,6 +87,38 @@ func (q *Queries) ListAnswerHistory(ctx context.Context) ([]ListAnswerHistoryRow
 	return items, nil
 }
 
+const listCardStates = `-- name: ListCardStates :many
+SELECT question_id, state FROM cards
+`
+
+type ListCardStatesRow struct {
+	QuestionID int64
+	State      string
+}
+
+func (q *Queries) ListCardStates(ctx context.Context) ([]ListCardStatesRow, error) {
+	rows, err := q.db.QueryContext(ctx, listCardStates)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListCardStatesRow
+	for rows.Next() {
+		var i ListCardStatesRow
+		if err := rows.Scan(&i.QuestionID, &i.State); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listDrillSolveTimes = `-- name: ListDrillSolveTimes :many
 SELECT solved_at FROM drills WHERE solved_at IS NOT NULL
 `
@@ -112,4 +144,46 @@ func (q *Queries) ListDrillSolveTimes(ctx context.Context) ([]sql.NullInt64, err
 		return nil, err
 	}
 	return items, nil
+}
+
+const listLearnedTopics = `-- name: ListLearnedTopics :many
+SELECT topic_slug FROM learned_topics
+`
+
+func (q *Queries) ListLearnedTopics(ctx context.Context) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, listLearnedTopics)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var topic_slug string
+		if err := rows.Scan(&topic_slug); err != nil {
+			return nil, err
+		}
+		items = append(items, topic_slug)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const markTopicLearned = `-- name: MarkTopicLearned :exec
+INSERT INTO learned_topics (topic_slug, learned_at) VALUES (?, ?)
+ON CONFLICT (topic_slug) DO NOTHING
+`
+
+type MarkTopicLearnedParams struct {
+	TopicSlug string
+	LearnedAt int64
+}
+
+func (q *Queries) MarkTopicLearned(ctx context.Context, arg MarkTopicLearnedParams) error {
+	_, err := q.db.ExecContext(ctx, markTopicLearned, arg.TopicSlug, arg.LearnedAt)
+	return err
 }

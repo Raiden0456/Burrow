@@ -1,10 +1,12 @@
 import { Link } from "react-router"
-import { CheckCircle2Icon, CircleAlertIcon, TrophyIcon, XCircleIcon } from "lucide-react"
+import { BadgeCheckIcon, CheckCircle2Icon, CircleAlertIcon, TrophyIcon, XCircleIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useI18n } from "@/i18n"
 import { cn } from "@/lib/utils"
 import type { Quiz } from "../types/quiz"
+
+const checkpointPass = 80
 
 export function QuizSummary({ quiz, onReview }: { quiz: Quiz; onReview: (index: number) => void }) {
   const { t } = useI18n()
@@ -27,6 +29,12 @@ export function QuizSummary({ quiz, onReview }: { quiz: Quiz; onReview: (index: 
             </div>
           </div>
         </div>
+        {quiz.kind === "checkpoint" && (
+          <div className={cn("flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm", score >= checkpointPass ? "bg-success/10 text-success" : "bg-warning/10 text-warning")}>
+            {score >= checkpointPass ? <BadgeCheckIcon className="size-4 shrink-0" /> : <CircleAlertIcon className="size-4 shrink-0" />}
+            {score >= checkpointPass ? t("quiz.summary.checkpointPassed") : t("quiz.summary.checkpointFailed")}
+          </div>
+        )}
         <div data-glass className="flex flex-col divide-y overflow-hidden rounded-lg border">
           {quiz.questions.map((q, i) => {
             const r = q.result

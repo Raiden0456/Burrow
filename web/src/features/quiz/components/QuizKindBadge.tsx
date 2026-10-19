@@ -8,6 +8,7 @@ const kinds: Record<QuizKind, { label: MessageKey; tone: Tone }> = {
   topic: { label: "quizKind.topic", tone: "blue" },
   review: { label: "quizKind.review", tone: "cyan" },
   daily: { label: "quizKind.daily", tone: "purple" },
+  checkpoint: { label: "quizKind.checkpoint", tone: "green" },
 }
 
 export function QuizKindBadge({ kind }: { kind: QuizKind }) {

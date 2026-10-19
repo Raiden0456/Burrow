@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react"
+import { useEffect, useState, type MouseEvent } from "react"
 import { CheckIcon, CopyIcon } from "lucide-react"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { useI18n } from "@/i18n"
+import { copyText } from "@/lib/clipboard"
 import { highlight } from "@/lib/highlight"
 
 export function CodeBlock({ code, lang }: { code: string; lang: string }) {
@@ -17,8 +19,13 @@ export function CodeBlock({ code, lang }: { code: string; lang: string }) {
     }
   }, [code, lang])
 
-  const copy = async () => {
-    await navigator.clipboard.writeText(code)
+  const copy = async (e: MouseEvent<HTMLButtonElement>) => {
+    try {
+      await copyText(code, e.currentTarget.parentElement ?? undefined)
+    } catch {
+      toast.error(t("common.copyFailed"))
+      return
+    }
     setCopied(true)
     setTimeout(() => setCopied(false), 1500)
   }
@@ -35,7 +42,7 @@ export function CodeBlock({ code, lang }: { code: string; lang: string }) {
       <Button
         size="icon-sm"
         variant="ghost"
-        className="absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+        className="absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100"
         onClick={copy}
         aria-label={t("common.copy")}
       >

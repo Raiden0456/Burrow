@@ -8,6 +8,7 @@ export function jobTarget(job: Job): string | null {
     case "drill":
       return job.resultId ? `/drills/${job.resultId}` : null
     case "quiz":
+    case "checkpoint":
     case "daily":
       return job.resultId ? `/quiz/${job.resultId}` : null
   }

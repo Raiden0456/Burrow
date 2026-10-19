@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "react-router"
-import { BadgeCheckIcon, CheckCircle2Icon, CodeIcon } from "lucide-react"
+import { BadgeCheckIcon, CheckCircle2Icon, CodeIcon, CompassIcon } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PageHeader } from "@/components/PageHeader"
 import { PageLoader } from "@/components/PageLoader"
@@ -16,7 +16,7 @@ import { LessonAction } from "./LessonAction"
 export function TopicsPage() {
   const { t } = useI18n()
   const curriculum = useCurriculum()
-  const { byTopic } = useProgress()
+  const { byTopic, data: progress } = useProgress()
   const lessons = useQuery({ queryKey: ["lessons"], queryFn: topicsApi.lessons })
   const jobs = useJobs()
 
@@ -39,16 +39,22 @@ export function TopicsPage() {
             <CardContent className="flex flex-col divide-y">
               {module.topics.map((topic) => {
                 const stat = byTopic.get(topic.slug)
-                const mastered = (stat?.mastery ?? 0) >= 0.7
+                const learned = stat?.learned ?? false
                 return (
                   <div key={topic.slug} className="-mx-2 flex flex-col gap-2 rounded-md px-2 py-3 transition-colors hover:bg-muted/60 sm:flex-row sm:items-center">
                     <Link to={`/topics/${topic.slug}`} className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2 font-medium">
                         {topic.title}
-                        {mastered && (
+                        {learned && (
                           <span className="inline-flex items-center gap-1 rounded-full bg-success/15 px-2 py-0.5 text-[11px] font-medium text-success">
                             <BadgeCheckIcon className="size-3" />
                             {t("topics.mastered")}
+                          </span>
+                        )}
+                        {progress?.frontier === topic.slug && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-hue-purple/15 px-2 py-0.5 text-[11px] font-medium text-hue-purple">
+                            <CompassIcon className="size-3" />
+                            {t("topics.next")}
                           </span>
                         )}
                       </div>

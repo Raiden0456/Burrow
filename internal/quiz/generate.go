@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/raiden0456/gonteractive/internal/ai"
 	"github.com/raiden0456/gonteractive/internal/curriculum"
@@ -107,7 +108,7 @@ func (q generatedQuestion) validate() error {
 	}
 }
 
-func (s *Service) generateQuestions(ctx context.Context, topic curriculum.Topic, n int) ([]generatedQuestion, error) {
+func (s *Service) generateQuestions(ctx context.Context, topic curriculum.Topic, n int, checkpoint bool) ([]generatedQuestion, error) {
 	prefs, err := s.settings.Preferences(ctx)
 	if err != nil {
 		return nil, err
@@ -124,7 +125,7 @@ func (s *Service) generateQuestions(ctx context.Context, topic curriculum.Topic,
 	if err != nil {
 		return nil, err
 	}
-	stats, err := s.progress.TopicStats(ctx)
+	stats, err := s.progress.TopicStats(ctx, time.Now())
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +137,7 @@ func (s *Service) generateQuestions(ctx context.Context, topic curriculum.Topic,
 	set := generatedSet{want: n}
 	err = ai.GenerateJSON(ctx, provider, ai.Request{
 		System:   tutor.System(prefs, generatorRole),
-		Messages: []ai.Message{{Role: ai.RoleUser, Content: generationPrompt(topic, n, mastery, existing, mistakes)}},
+		Messages: []ai.Message{{Role: ai.RoleUser, Content: generationPrompt(topic, n, mastery, checkpoint, existing, mistakes)}},
 	}, questionsSchema, &set)
 	if err != nil {
 		return nil, err
@@ -144,13 +145,15 @@ func (s *Service) generateQuestions(ctx context.Context, topic curriculum.Topic,
 	return set.Questions, nil
 }
 
-func generationPrompt(topic curriculum.Topic, n int, mastery float64, existing []string, mistakes []db.ListRecentMistakesByTopicRow) string {
+func generationPrompt(topic curriculum.Topic, n int, mastery float64, checkpoint bool, existing []string, mistakes []db.ListRecentMistakesByTopicRow) string {
 	var b strings.Builder
 	b.WriteString(topic.Brief())
 	fmt.Fprintf(&b, "\nCreate %d new quiz questions for this topic.\n", n)
 	b.WriteString("Mix the kinds: mostly single_choice, some multi_choice, and about one open question per four questions.\n")
 
 	switch {
+	case checkpoint:
+		b.WriteString("This is a placement check: the learner says they already know this topic and wants to skip it. Cover every objective at least once, use difficulty 2-3, and make the questions hard to pass without real working knowledge.\n")
 	case mastery < 0.35:
 		b.WriteString("The learner is new to this topic: use difficulty 1-2.\n")
 	case mastery < 0.7:

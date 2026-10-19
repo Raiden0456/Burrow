@@ -4,6 +4,7 @@ export type TopicStat = {
   mastery: number
   drillsSolved: number
   lastActivity: number
+  learned: boolean
 }
 
 export type DayActivity = {
@@ -21,4 +22,5 @@ export type ProgressSummary = {
   drillsSolved: number
   activity: DayActivity[]
   topics: TopicStat[]
+  frontier: string | null
 }

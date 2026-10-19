@@ -95,17 +95,23 @@ func (q *Queries) CreateAnswer(ctx context.Context, arg CreateAnswerParams) (Ans
 }
 
 const createQuiz = `-- name: CreateQuiz :one
-INSERT INTO quizzes (kind, topic_slug, daily_date) VALUES (?, ?, ?) RETURNING id, kind, topic_slug, daily_date, created_at, completed_at
+INSERT INTO quizzes (kind, topic_slug, daily_date, checkpoint) VALUES (?, ?, ?, ?) RETURNING id, kind, topic_slug, daily_date, created_at, completed_at, checkpoint
 `
 
 type CreateQuizParams struct {
-	Kind      string
-	TopicSlug sql.NullString
-	DailyDate sql.NullString
+	Kind       string
+	TopicSlug  sql.NullString
+	DailyDate  sql.NullString
+	Checkpoint bool
 }
 
 func (q *Queries) CreateQuiz(ctx context.Context, arg CreateQuizParams) (Quiz, error) {
-	row := q.db.QueryRowContext(ctx, createQuiz, arg.Kind, arg.TopicSlug, arg.DailyDate)
+	row := q.db.QueryRowContext(ctx, createQuiz,
+		arg.Kind,
+		arg.TopicSlug,
+		arg.DailyDate,
+		arg.Checkpoint,
+	)
 	var i Quiz
 	err := row.Scan(
 		&i.ID,
@@ -114,12 +120,13 @@ func (q *Queries) CreateQuiz(ctx context.Context, arg CreateQuizParams) (Quiz, e
 		&i.DailyDate,
 		&i.CreatedAt,
 		&i.CompletedAt,
+		&i.Checkpoint,
 	)
 	return i, err
 }
 
 const getDailyQuiz = `-- name: GetDailyQuiz :one
-SELECT id, kind, topic_slug, daily_date, created_at, completed_at FROM quizzes WHERE daily_date = ?
+SELECT id, kind, topic_slug, daily_date, created_at, completed_at, checkpoint FROM quizzes WHERE daily_date = ?
 `
 
 func (q *Queries) GetDailyQuiz(ctx context.Context, dailyDate sql.NullString) (Quiz, error) {
@@ -132,12 +139,13 @@ func (q *Queries) GetDailyQuiz(ctx context.Context, dailyDate sql.NullString) (Q
 		&i.DailyDate,
 		&i.CreatedAt,
 		&i.CompletedAt,
+		&i.Checkpoint,
 	)
 	return i, err
 }
 
 const getQuiz = `-- name: GetQuiz :one
-SELECT id, kind, topic_slug, daily_date, created_at, completed_at FROM quizzes WHERE id = ?
+SELECT id, kind, topic_slug, daily_date, created_at, completed_at, checkpoint FROM quizzes WHERE id = ?
 `
 
 func (q *Queries) GetQuiz(ctx context.Context, id int64) (Quiz, error) {
@@ -150,6 +158,7 @@ func (q *Queries) GetQuiz(ctx context.Context, id int64) (Quiz, error) {
 		&i.DailyDate,
 		&i.CreatedAt,
 		&i.CompletedAt,
+		&i.Checkpoint,
 	)
 	return i, err
 }
@@ -264,7 +273,7 @@ func (q *Queries) ListQuizQuestions(ctx context.Context, quizID int64) ([]Questi
 }
 
 const listQuizzes = `-- name: ListQuizzes :many
-SELECT id, kind, topic_slug, daily_date, created_at, completed_at FROM quizzes
+SELECT id, kind, topic_slug, daily_date, created_at, completed_at, checkpoint FROM quizzes
 WHERE (?1 IS NULL OR topic_slug = ?1)
   AND (?2 IS NULL OR (completed_at IS NULL) = ?2)
 ORDER BY id DESC
@@ -293,6 +302,7 @@ func (q *Queries) ListQuizzes(ctx context.Context, arg ListQuizzesParams) ([]Qui
 			&i.DailyDate,
 			&i.CreatedAt,
 			&i.CompletedAt,
+			&i.Checkpoint,
 		); err != nil {
 			return nil, err
 		}
@@ -308,7 +318,7 @@ func (q *Queries) ListQuizzes(ctx context.Context, arg ListQuizzesParams) ([]Qui
 }
 
 const listRecentQuizzes = `-- name: ListRecentQuizzes :many
-SELECT id, kind, topic_slug, daily_date, created_at, completed_at FROM quizzes ORDER BY id DESC LIMIT ?
+SELECT id, kind, topic_slug, daily_date, created_at, completed_at, checkpoint FROM quizzes ORDER BY id DESC LIMIT ?
 `
 
 func (q *Queries) ListRecentQuizzes(ctx context.Context, limit int64) ([]Quiz, error) {
@@ -327,6 +337,7 @@ func (q *Queries) ListRecentQuizzes(ctx context.Context, limit int64) ([]Quiz, e
 			&i.DailyDate,
 			&i.CreatedAt,
 			&i.CompletedAt,
+			&i.Checkpoint,
 		); err != nil {
 			return nil, err
 		}

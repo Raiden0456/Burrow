@@ -23,6 +23,7 @@ func (in sizeInput) clamp(fallback int) int {
 
 func (s *Service) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/topics/{slug}/quizzes", httpx.Handle(s.createTopic))
+	mux.HandleFunc("POST /api/topics/{slug}/checkpoint", httpx.Handle(s.createCheckpoint))
 	mux.HandleFunc("POST /api/quizzes/review", httpx.Handle(s.createReview))
 	mux.HandleFunc("GET /api/quizzes", httpx.Handle(s.list))
 	mux.HandleFunc("GET /api/quizzes/{id}", httpx.Handle(s.get))
@@ -46,6 +47,25 @@ func (s *Service) createTopic(w http.ResponseWriter, r *http.Request) error {
 	size := in.clamp(5)
 	job, err := s.jobs.Start(r.Context(), jobs.KindQuiz, topic.Slug, func(ctx context.Context, _ func(string)) (int64, error) {
 		quiz, err := s.CreateTopicQuiz(ctx, topic.Slug, size)
+		return quiz.ID, err
+	})
+	if err != nil {
+		return err
+	}
+	httpx.JSON(w, http.StatusAccepted, job)
+	return nil
+}
+
+func (s *Service) createCheckpoint(w http.ResponseWriter, r *http.Request) error {
+	topic, err := s.curriculum.Lookup(r.PathValue("slug"))
+	if err != nil {
+		return err
+	}
+	if _, err := s.providers.For(r.Context(), providers.TaskGenerate); err != nil {
+		return err
+	}
+	job, err := s.jobs.Start(r.Context(), jobs.KindCheckpoint, topic.Slug, func(ctx context.Context, _ func(string)) (int64, error) {
+		quiz, err := s.CreateCheckpointQuiz(ctx, topic.Slug)
 		return quiz.ID, err
 	})
 	if err != nil {

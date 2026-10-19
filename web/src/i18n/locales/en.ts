@@ -10,6 +10,7 @@ export const en = {
 
   "common.errorTitle": "Something went wrong",
   "common.copy": "Copy code",
+  "common.copyFailed": "Could not copy to the clipboard",
   "common.cancel": "Cancel",
   "common.save": "Save",
   "common.backToTopic": "Back to topic",
@@ -36,6 +37,7 @@ export const en = {
   "jobs.kind.quiz": "Quiz: {topic}",
   "jobs.kind.drill": "Drill: {topic}",
   "jobs.kind.daily": "Daily quiz",
+  "jobs.kind.checkpoint": "Checkpoint: {topic}",
 
   "auth.tagline": "Your personal Go tutor",
   "auth.password": "Password",
@@ -86,12 +88,14 @@ export const en = {
   "quizKind.topic": "Topic",
   "quizKind.review": "Review",
   "quizKind.daily": "Daily",
+  "quizKind.checkpoint": "Checkpoint",
 
   "topics.title": "Topics",
   "topics.description": "Work through the course in order or jump to whatever you need.",
   "topics.answered": { one: "{count} answered", other: "{count} answered" },
   "topics.drills": { one: "{count} drill", other: "{count} drills" },
   "topics.mastered": "Mastered",
+  "topics.next": "Next up",
   "topics.tab.lesson": "Lesson",
   "topics.tab.practice": "Practice",
   "topics.lesson.empty": "No lesson for this topic yet. Generate one tailored to you; it is saved for later.",
@@ -108,6 +112,10 @@ export const en = {
   "topics.quiz.generating": "Generating questions…",
   "topics.quiz.history": "Your quizzes on this topic",
   "topics.quiz.historyEmpty": "No quizzes on this topic yet.",
+  "topics.checkpoint.title": "Already know this?",
+  "topics.checkpoint.description": "Take a {count}-question test across all objectives. Score 80% or more and the topic counts as mastered, so the daily quiz moves on.",
+  "topics.checkpoint.start": "Take the test",
+  "topics.checkpoint.mastered": "Topic mastered. The daily quiz keeps it fresh with spaced reviews.",
   "topics.askAi": "Ask AI about this topic",
 
   "drills.title": "Coding drills",
@@ -142,6 +150,7 @@ export const en = {
   "quiz.title.topic": "Topic quiz",
   "quiz.title.review": "Review",
   "quiz.title.daily": "Daily quiz",
+  "quiz.title.checkpoint": "Checkpoint",
   "quiz.progress": "{answered} / {total} answered",
   "quiz.exit": "Close quiz",
   "quiz.questionAria": "Question {n}",
@@ -168,6 +177,8 @@ export const en = {
   "quiz.summary.title": "Quiz complete",
   "quiz.summary.correct": "{correct} of {total} correct",
   "quiz.summary.dashboard": "Dashboard",
+  "quiz.summary.checkpointPassed": "Checkpoint passed: the topic counts as mastered.",
+  "quiz.summary.checkpointFailed": "Below 80%: the topic stays on your learning path.",
 
   "quizzes.title": "Quizzes",
   "quizzes.description": "Every quiz is saved, so you can pick up unfinished ones where you left off.",

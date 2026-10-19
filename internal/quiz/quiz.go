@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"math"
 	"net/http"
 	"sync"
 	"time"
@@ -30,9 +31,15 @@ const (
 )
 
 const (
-	quizTopic  = "topic"
-	quizReview = "review"
-	quizDaily  = "daily"
+	quizTopic      = "topic"
+	quizReview     = "review"
+	quizDaily      = "daily"
+	quizCheckpoint = "checkpoint"
+
+	CheckpointSize = 8
+
+	dailyReviewShare = 0.3
+	dailyWeakShare   = 0.2
 )
 
 type Response struct {
@@ -111,11 +118,23 @@ func (s *Service) CreateTopicQuiz(ctx context.Context, slug string, size int) (d
 	if err != nil {
 		return db.Quiz{}, err
 	}
-	generated, err := s.generateQuestions(ctx, topic, size)
+	generated, err := s.generateQuestions(ctx, topic, size, false)
 	if err != nil {
 		return db.Quiz{}, err
 	}
 	return s.createQuiz(ctx, db.CreateQuizParams{Kind: quizTopic, TopicSlug: nullString(slug)}, nil, map[string][]generatedQuestion{slug: generated})
+}
+
+func (s *Service) CreateCheckpointQuiz(ctx context.Context, slug string) (db.Quiz, error) {
+	topic, err := s.curriculum.Lookup(slug)
+	if err != nil {
+		return db.Quiz{}, err
+	}
+	generated, err := s.generateQuestions(ctx, topic, CheckpointSize, true)
+	if err != nil {
+		return db.Quiz{}, err
+	}
+	return s.createQuiz(ctx, db.CreateQuizParams{Kind: quizTopic, TopicSlug: nullString(slug), Checkpoint: true}, nil, map[string][]generatedQuestion{slug: generated})
 }
 
 func (s *Service) CreateReviewQuiz(ctx context.Context, size int) (db.Quiz, error) {
@@ -129,9 +148,9 @@ func (s *Service) CreateReviewQuiz(ctx context.Context, size int) (db.Quiz, erro
 	return s.createQuiz(ctx, db.CreateQuizParams{Kind: quizReview}, due, nil)
 }
 
-// CreateDailyQuiz fills the quiz with due reviews first and tops it up with fresh questions on the
-// learner's weakest topics. It is idempotent per date; generation failures are tolerated as long as
-// at least one question ends up in the quiz.
+// CreateDailyQuiz mixes due reviews (up to 30%), the weakest practiced topic (20%) and the next
+// unlearned topic of the curriculum (the rest). It is idempotent per date; generation failures are
+// tolerated as long as at least one question ends up in the quiz.
 func (s *Service) CreateDailyQuiz(ctx context.Context, date string, size int) (db.Quiz, error) {
 	if existing, err := s.q.GetDailyQuiz(ctx, nullString(date)); err == nil {
 		return existing, nil
@@ -139,47 +158,79 @@ func (s *Service) CreateDailyQuiz(ctx context.Context, date string, size int) (d
 		return db.Quiz{}, err
 	}
 
-	due, err := s.q.ListDueQuestionIDs(ctx, db.ListDueQuestionIDsParams{Due: time.Now().Unix(), Limit: int64(size)})
+	now := time.Now()
+	reviewCap := int(math.Round(float64(size) * dailyReviewShare))
+	due, err := s.q.ListDueQuestionIDs(ctx, db.ListDueQuestionIDsParams{Due: now.Unix(), Limit: int64(reviewCap)})
+	if err != nil {
+		return db.Quiz{}, err
+	}
+	frontier, weakest, err := s.progress.DailyTopics(ctx, now)
 	if err != nil {
 		return db.Quiz{}, err
 	}
 
-	fresh := map[string][]generatedQuestion{}
-	if remaining := size - len(due); remaining > 0 {
-		topics, err := s.progress.WeakestActiveTopics(ctx, min(2, remaining))
+	plan := dailyPlan(size-len(due), int(math.Round(float64(size)*dailyWeakShare)), frontier, weakest)
+	if len(plan) == 0 && len(due) < size {
+		more, err := s.q.ListDueQuestionIDs(ctx, db.ListDueQuestionIDsParams{Due: now.Unix(), Limit: int64(size)})
 		if err != nil {
 			return db.Quiz{}, err
 		}
-		results := make([][]generatedQuestion, len(topics))
-		errs := make([]error, len(topics))
-		var wg sync.WaitGroup
-		for i, slug := range topics {
-			n := remaining / len(topics)
-			if i < remaining%len(topics) {
-				n++
-			}
-			topic, _ := s.curriculum.Topic(slug)
-			wg.Go(func() { results[i], errs[i] = s.generateQuestions(ctx, topic, n) })
-		}
-		wg.Wait()
+		due = more
+	}
 
-		var genErr error
-		for i, slug := range topics {
-			if errors.Is(errs[i], providers.ErrNotConfigured) {
-				return db.Quiz{}, errs[i]
-			}
-			if errs[i] != nil {
-				genErr = errs[i]
-				slog.Warn("daily quiz: question generation failed", "topic", slug, "err", errs[i])
-				continue
-			}
-			fresh[slug] = results[i]
+	results := make([][]generatedQuestion, len(plan))
+	errs := make([]error, len(plan))
+	var wg sync.WaitGroup
+	for i, p := range plan {
+		topic, _ := s.curriculum.Topic(p.slug)
+		wg.Go(func() { results[i], errs[i] = s.generateQuestions(ctx, topic, p.n, false) })
+	}
+	wg.Wait()
+
+	fresh := map[string][]generatedQuestion{}
+	var genErr error
+	for i, p := range plan {
+		if errors.Is(errs[i], providers.ErrNotConfigured) {
+			return db.Quiz{}, errs[i]
 		}
-		if len(due) == 0 && len(fresh) == 0 {
-			return db.Quiz{}, fmt.Errorf("daily quiz: no due reviews and generation failed: %w", genErr)
+		if errs[i] != nil {
+			genErr = errs[i]
+			slog.Warn("daily quiz: question generation failed", "topic", p.slug, "err", errs[i])
+			continue
 		}
+		fresh[p.slug] = results[i]
+	}
+	if len(due) == 0 && len(fresh) == 0 {
+		return db.Quiz{}, fmt.Errorf("daily quiz: no due reviews and generation failed: %w", genErr)
 	}
 	return s.createQuiz(ctx, db.CreateQuizParams{Kind: quizDaily, DailyDate: nullString(date)}, due, fresh)
+}
+
+type topicShare struct {
+	slug string
+	n    int
+}
+
+func dailyPlan(fresh, weakShare int, frontier, weakest string) []topicShare {
+	if fresh <= 0 {
+		return nil
+	}
+	weakN := 0
+	switch {
+	case weakest == "":
+	case frontier == "":
+		weakN = fresh
+	default:
+		weakN = min(weakShare, fresh-1)
+	}
+	var plan []topicShare
+	if frontier != "" {
+		plan = append(plan, topicShare{frontier, fresh - weakN})
+	}
+	if weakN > 0 {
+		plan = append(plan, topicShare{weakest, weakN})
+	}
+	return plan
 }
 
 func (s *Service) createQuiz(ctx context.Context, params db.CreateQuizParams, existing []int64, fresh map[string][]generatedQuestion) (db.Quiz, error) {
@@ -257,7 +308,7 @@ func (s *Service) View(ctx context.Context, id int64) (QuizView, error) {
 
 	view := QuizView{
 		ID:          quiz.ID,
-		Kind:        quiz.Kind,
+		Kind:        kindOf(quiz),
 		TopicSlug:   ptrString(quiz.TopicSlug),
 		DailyDate:   ptrString(quiz.DailyDate),
 		CreatedAt:   quiz.CreatedAt,
@@ -371,7 +422,10 @@ func (s *Service) Answer(ctx context.Context, quizID, questionID int64, resp Res
 		}
 		if len(answers)+1 == len(questions) {
 			completed = true
-			return q.CompleteQuiz(ctx, quiz.ID)
+			if err := q.CompleteQuiz(ctx, quiz.ID); err != nil {
+				return err
+			}
+			return s.settle(ctx, q, quiz, questions, append(answers, answer))
 		}
 		return nil
 	})
@@ -380,6 +434,24 @@ func (s *Service) Answer(ctx context.Context, quizID, questionID int64, resp Res
 	}
 	res, err := result(*question, answer)
 	return res, completed, err
+}
+
+func (s *Service) settle(ctx context.Context, q *db.Queries, quiz db.Quiz, questions []db.Question, answers []db.Answer) error {
+	now := time.Now()
+	if quiz.Checkpoint && *averageScore(answers) >= progress.CheckpointPass {
+		if err := s.progress.MarkLearned(ctx, q, quiz.TopicSlug.String, now); err != nil {
+			return err
+		}
+	}
+	var slugs []string
+	seen := map[string]bool{}
+	for _, question := range questions {
+		if !seen[question.TopicSlug] {
+			seen[question.TopicSlug] = true
+			slugs = append(slugs, question.TopicSlug)
+		}
+	}
+	return s.progress.Settle(ctx, q, slugs, now)
 }
 
 type Filter struct {
@@ -412,7 +484,7 @@ func (s *Service) List(ctx context.Context, f Filter) ([]Summary, error) {
 		}
 		out = append(out, Summary{
 			ID:          quiz.ID,
-			Kind:        quiz.Kind,
+			Kind:        kindOf(quiz),
 			TopicSlug:   ptrString(quiz.TopicSlug),
 			DailyDate:   ptrString(quiz.DailyDate),
 			CreatedAt:   quiz.CreatedAt,
@@ -438,6 +510,13 @@ func (s *Service) SaveDraft(ctx context.Context, quizID, questionID int64, resp 
 		return httpx.Errorf(http.StatusNotFound, "question %d is not part of quiz %d", questionID, quizID)
 	}
 	return nil
+}
+
+func kindOf(q db.Quiz) string {
+	if q.Checkpoint {
+		return quizCheckpoint
+	}
+	return q.Kind
 }
 
 func toHint(h db.Hint) Hint {

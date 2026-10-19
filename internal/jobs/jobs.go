@@ -15,10 +15,11 @@ import (
 type Kind string
 
 const (
-	KindLesson Kind = "lesson"
-	KindQuiz   Kind = "quiz"
-	KindDrill  Kind = "drill"
-	KindDaily  Kind = "daily"
+	KindLesson     Kind = "lesson"
+	KindQuiz       Kind = "quiz"
+	KindDrill      Kind = "drill"
+	KindDaily      Kind = "daily"
+	KindCheckpoint Kind = "checkpoint"
 )
 
 const (

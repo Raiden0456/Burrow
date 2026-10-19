@@ -13,6 +13,7 @@ import { useJob, useRunningJob } from "@/features/jobs"
 import { QuizList, quizApi } from "@/features/quiz"
 import { useI18n } from "@/i18n"
 import type { Topic } from "../types/curriculum"
+import { CheckpointCard } from "./CheckpointCard"
 
 export function PracticePanel({ topic }: { topic: Topic }) {
   const { t } = useI18n()
@@ -44,6 +45,7 @@ export function PracticePanel({ topic }: { topic: Topic }) {
 
   return (
     <div className="flex flex-col gap-6">
+      <CheckpointCard slug={topic.slug} />
       <Card className="border-l-4 border-l-hue-blue">
         <CardHeader className="flex flex-row items-start gap-3">
           <IconChip icon={ListChecksIcon} tone="blue" />

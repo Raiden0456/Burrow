@@ -1,4 +1,4 @@
-export type JobKind = "lesson" | "quiz" | "drill" | "daily"
+export type JobKind = "lesson" | "quiz" | "drill" | "daily" | "checkpoint"
 
 export type JobStatus = "running" | "done" | "failed"
 

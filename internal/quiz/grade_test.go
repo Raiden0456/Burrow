@@ -1,6 +1,7 @@
 package quiz
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/raiden0456/gonteractive/internal/store/db"
@@ -64,6 +65,30 @@ func TestGeneratedSetValidate(t *testing.T) {
 			}
 			if err == nil && len(set.Questions) != tt.want {
 				t.Fatalf("got %d questions, want %d", len(set.Questions), tt.want)
+			}
+		})
+	}
+}
+
+func TestDailyPlan(t *testing.T) {
+	tests := []struct {
+		name             string
+		fresh, weakShare int
+		frontier, weak   string
+		want             []topicShare
+	}{
+		{"frontier and weak", 6, 2, "f", "w", []topicShare{{"f", 4}, {"w", 2}}},
+		{"no practiced topics", 6, 2, "f", "", []topicShare{{"f", 6}}},
+		{"everything learned", 6, 2, "", "w", []topicShare{{"w", 6}}},
+		{"frontier keeps a slot when space is tight", 2, 2, "f", "w", []topicShare{{"f", 1}, {"w", 1}}},
+		{"no room", 0, 2, "f", "w", nil},
+		{"nothing to pick", 6, 2, "", "", nil},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := dailyPlan(tt.fresh, tt.weakShare, tt.frontier, tt.weak)
+			if !slices.Equal(got, tt.want) {
+				t.Fatalf("got %v, want %v", got, tt.want)
 			}
 		})
 	}

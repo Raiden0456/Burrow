@@ -7,13 +7,12 @@ import { MasteryBar, type TopicStat } from "@/features/progress"
 import type { Module } from "@/features/topics"
 import { useI18n } from "@/i18n"
 
-export function ContinueCard({ modules, stats, ...props }: { modules: Module[]; stats: TopicStat[] } & ComponentProps<"div">) {
+export function ContinueCard({ modules, stats, frontier, ...props }: { modules: Module[]; stats: TopicStat[]; frontier: string | null } & ComponentProps<"div">) {
   const { t } = useI18n()
   const all = modules.flatMap((m) => m.topics)
   const titles = new Map(all.map((topic) => [topic.slug, topic.title]))
   const recent = [...stats].sort((a, b) => b.lastActivity - a.lastActivity).slice(0, 3)
-  const seen = new Set(stats.map((s) => s.slug))
-  const next = all.find((topic) => !seen.has(topic.slug))
+  const next = all.find((topic) => topic.slug === frontier)
 
   return (
     <Card {...props}>

@@ -9,6 +9,7 @@ export const ru: Messages = {
 
   "common.errorTitle": "Что-то пошло не так",
   "common.copy": "Скопировать код",
+  "common.copyFailed": "Не удалось скопировать в буфер обмена",
   "common.cancel": "Отмена",
   "common.save": "Сохранить",
   "common.backToTopic": "К теме",
@@ -35,6 +36,7 @@ export const ru: Messages = {
   "jobs.kind.quiz": "Квиз: {topic}",
   "jobs.kind.drill": "Дрилл: {topic}",
   "jobs.kind.daily": "Ежедневный квиз",
+  "jobs.kind.checkpoint": "Чекпоинт: {topic}",
 
   "auth.tagline": "Ваш личный репетитор по Go",
   "auth.password": "Пароль",
@@ -92,12 +94,14 @@ export const ru: Messages = {
   "quizKind.topic": "Тема",
   "quizKind.review": "Повтор",
   "quizKind.daily": "Ежедневный",
+  "quizKind.checkpoint": "Чекпоинт",
 
   "topics.title": "Темы",
   "topics.description": "Проходите курс по порядку или сразу переходите к нужной теме.",
   "topics.answered": { one: "{count} ответ", few: "{count} ответа", many: "{count} ответов", other: "{count} ответа" },
   "topics.drills": { one: "{count} дрилл", few: "{count} дрилла", many: "{count} дриллов", other: "{count} дрилла" },
   "topics.mastered": "Освоено",
+  "topics.next": "Следующая",
   "topics.tab.lesson": "Урок",
   "topics.tab.practice": "Практика",
   "topics.lesson.empty": "Для этой темы ещё нет урока. Сгенерируйте его под себя — он сохранится.",
@@ -114,6 +118,10 @@ export const ru: Messages = {
   "topics.quiz.generating": "Генерируем вопросы…",
   "topics.quiz.history": "Ваши квизы по теме",
   "topics.quiz.historyEmpty": "Квизов по этой теме пока нет.",
+  "topics.checkpoint.title": "Уже знаешь тему?",
+  "topics.checkpoint.description": "Пройди тест из {count} вопросов по всем целям темы. Наберёшь 80% или больше — тема засчитается как освоенная, и ежедневный квиз пойдёт дальше.",
+  "topics.checkpoint.start": "Пройти тест",
+  "topics.checkpoint.mastered": "Тема освоена. Ежедневный квиз будет поддерживать её интервальными повторениями.",
   "topics.askAi": "Спросить AI об этой теме",
 
   "drills.title": "Дриллы",
@@ -148,6 +156,7 @@ export const ru: Messages = {
   "quiz.title.topic": "Квиз по теме",
   "quiz.title.review": "Повторение",
   "quiz.title.daily": "Ежедневный квиз",
+  "quiz.title.checkpoint": "Чекпоинт",
   "quiz.progress": "Отвечено {answered} из {total}",
   "quiz.exit": "Закрыть квиз",
   "quiz.questionAria": "Вопрос {n}",
@@ -174,6 +183,8 @@ export const ru: Messages = {
   "quiz.summary.title": "Квиз завершён",
   "quiz.summary.correct": "Верно {correct} из {total}",
   "quiz.summary.dashboard": "На главную",
+  "quiz.summary.checkpointPassed": "Чекпоинт пройден: тема засчитана как освоенная.",
+  "quiz.summary.checkpointFailed": "Меньше 80%: тема остаётся на пути обучения.",
 
   "quizzes.title": "Квизы",
   "quizzes.description": "Все квизы сохраняются: незавершённые можно продолжить с того же места.",

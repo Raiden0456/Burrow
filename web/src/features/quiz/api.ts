@@ -18,6 +18,7 @@ function query(f: QuizFilter) {
 
 export const quizApi = {
   createForTopic: (slug: string, size: number) => api.post<Job>(`/api/topics/${slug}/quizzes`, { size }),
+  createCheckpoint: (slug: string) => api.post<Job>(`/api/topics/${slug}/checkpoint`),
   createReview: (size: number) => api.post<{ id: number }>("/api/quizzes/review", { size }),
   list: (f: QuizFilter = {}) => api.get<QuizSummary[]>(`/api/quizzes?${query(f)}`),
   get: (id: number) => api.get<Quiz>(`/api/quizzes/${id}`),

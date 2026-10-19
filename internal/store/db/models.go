@@ -84,6 +84,11 @@ type Job struct {
 	FinishedAt sql.NullInt64
 }
 
+type LearnedTopic struct {
+	TopicSlug string
+	LearnedAt int64
+}
+
 type Lesson struct {
 	TopicSlug string
 	Content   string
@@ -125,6 +130,7 @@ type Quiz struct {
 	DailyDate   sql.NullString
 	CreatedAt   int64
 	CompletedAt sql.NullInt64
+	Checkpoint  bool
 }
 
 type QuizItem struct {

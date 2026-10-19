@@ -64,7 +64,7 @@ export function DashboardPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <ContinueCard {...enter(7)} modules={curriculum.modules} stats={p.topics} />
+        <ContinueCard {...enter(7)} modules={curriculum.modules} stats={p.topics} frontier={p.frontier} />
         <Card {...enter(8)}>
           <CardHeader className="flex flex-row items-center gap-3">
             <IconChip icon={CalendarDaysIcon} tone="green" />

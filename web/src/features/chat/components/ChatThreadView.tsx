@@ -65,7 +65,7 @@ export function ChatThreadView({ id }: { id: number }) {
         {count === 0 && !streaming && <p className="text-sm text-muted-foreground">{t("chat.empty")}</p>}
         <div ref={bottom} />
       </div>
-      <div data-glass className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur md:sticky md:mt-4 md:rounded-xl md:border-0 md:bg-background md:px-0 md:pt-2 md:pb-4 md:backdrop-blur-none">
+      <div data-glass className="fixed inset-x-0 bottom-0 z-40 border-t bg-background/95 px-4 pt-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur md:sticky md:mt-4 md:border-0 md:bg-background md:backdrop-blur-none md:not-wallpaper:px-0 md:not-wallpaper:pt-2 md:not-wallpaper:pb-4 md:wallpaper:bottom-4 md:wallpaper:rounded-xl md:wallpaper:p-3">
         <Composer disabled={streaming} onSend={send} />
       </div>
     </div>

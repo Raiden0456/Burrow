@@ -36,7 +36,7 @@ export type Question = {
   hints: Hint[]
 }
 
-export type QuizKind = "topic" | "review" | "daily"
+export type QuizKind = "topic" | "review" | "daily" | "checkpoint"
 
 export type Quiz = {
   id: number
