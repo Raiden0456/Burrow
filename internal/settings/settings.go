@@ -18,6 +18,7 @@ const (
 	preferencesKey  = "preferences"
 	interfaceKey    = "interface"
 	maxWallpaperDim = 90
+	dateLayout      = "2006-01-02"
 )
 
 type Interface struct {
@@ -40,11 +41,12 @@ func (ui Interface) Validate() error {
 }
 
 type Preferences struct {
-	Language     string `json:"language"`
-	Profile      string `json:"profile"`
-	DailyEnabled bool   `json:"dailyEnabled"`
-	DailyTime    string `json:"dailyTime"`
-	DailySize    int    `json:"dailySize"`
+	Language         string `json:"language"`
+	Profile          string `json:"profile"`
+	DailyEnabled     bool   `json:"dailyEnabled"`
+	DailyTime        string `json:"dailyTime"`
+	DailySize        int    `json:"dailySize"`
+	DailyPausedUntil string `json:"dailyPausedUntil"`
 }
 
 func DefaultPreferences() Preferences {
@@ -66,6 +68,11 @@ func (p Preferences) Validate() error {
 	if p.DailySize < 3 || p.DailySize > 30 {
 		return errors.New("dailySize must be between 3 and 30")
 	}
+	if p.DailyPausedUntil != "" {
+		if _, err := time.Parse(dateLayout, p.DailyPausedUntil); err != nil {
+			return errors.New("dailyPausedUntil must be YYYY-MM-DD")
+		}
+	}
 	return nil
 }
 
@@ -73,6 +80,10 @@ func (p Preferences) DailyAt(day time.Time) time.Time {
 	t, _ := time.Parse("15:04", p.DailyTime)
 	y, m, d := day.Date()
 	return time.Date(y, m, d, t.Hour(), t.Minute(), 0, 0, day.Location())
+}
+
+func (p Preferences) DailyPaused(now time.Time) bool {
+	return p.DailyPausedUntil != "" && now.Format(dateLayout) <= p.DailyPausedUntil
 }
 
 type Store struct {

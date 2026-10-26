@@ -22,7 +22,7 @@ func (s *Scheduler) Routes(mux *http.ServeMux) {
 
 func (s *Scheduler) getToday(w http.ResponseWriter, r *http.Request) error {
 	now := time.Now()
-	q, err := s.Today(r.Context(), now)
+	q, err := s.Pending(r.Context(), now)
 	if err != nil {
 		return err
 	}
@@ -31,13 +31,19 @@ func (s *Scheduler) getToday(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	var quizID *int64
+	var quizDate, pausedUntil *string
 	if q != nil {
-		quizID = &q.ID
+		quizID, quizDate = &q.ID, &q.DailyDate.String
+	}
+	if prefs.DailyPaused(now) {
+		pausedUntil = &prefs.DailyPausedUntil
 	}
 	httpx.JSON(w, http.StatusOK, map[string]any{
 		"date":        now.Format(dateLayout),
 		"quizId":      quizID,
+		"quizDate":    quizDate,
 		"enabled":     prefs.DailyEnabled,
+		"pausedUntil": pausedUntil,
 		"scheduledAt": prefs.DailyAt(now).Unix(),
 	})
 	return nil

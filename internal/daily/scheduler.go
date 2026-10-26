@@ -56,7 +56,13 @@ func (s *Scheduler) tick(ctx context.Context, now time.Time) {
 		slog.Error("daily: load preferences", "err", err)
 		return
 	}
-	if !prefs.DailyEnabled || now.Before(prefs.DailyAt(now)) {
+	if !prefs.DailyEnabled || prefs.DailyPaused(now) || now.Before(prefs.DailyAt(now)) {
+		return
+	}
+	if q, err := s.Pending(ctx, now); err != nil {
+		slog.Error("daily: load pending quiz", "err", err)
+		return
+	} else if q != nil && q.DailyDate.String != now.Format(dateLayout) {
 		return
 	}
 	if !s.lastFailure.IsZero() && now.Sub(s.lastFailure) < retryAfter {
@@ -107,8 +113,12 @@ func (s *Scheduler) Ensure(ctx context.Context, now time.Time, size int) (db.Qui
 	return q, err == nil, err
 }
 
-func (s *Scheduler) Today(ctx context.Context, now time.Time) (*db.Quiz, error) {
+// Pending returns today's daily quiz, or else the latest unfinished one; nil if neither exists.
+func (s *Scheduler) Pending(ctx context.Context, now time.Time) (*db.Quiz, error) {
 	q, err := s.q.GetDailyQuiz(ctx, sql.NullString{String: now.Format(dateLayout), Valid: true})
+	if errors.Is(err, sql.ErrNoRows) {
+		q, err = s.q.GetOpenDailyQuiz(ctx)
+	}
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, nil
 	}

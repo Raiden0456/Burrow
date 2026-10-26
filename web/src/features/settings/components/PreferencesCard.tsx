@@ -76,6 +76,18 @@ function PreferencesForm({ initial, ...props }: { initial: Preferences } & Compo
                 <Label htmlFor="dailySize">{t("settings.prefs.questions")}</Label>
                 <Input id="dailySize" type="number" min={3} max={30} value={form.dailySize} onChange={(e) => set("dailySize", Number(e.target.value))} />
               </div>
+              <div className="col-span-2 flex flex-col gap-1.5">
+                <Label htmlFor="dailyPausedUntil">{t("settings.prefs.pausedUntil")}</Label>
+                <div className="flex gap-2">
+                  <Input id="dailyPausedUntil" type="date" value={form.dailyPausedUntil} onChange={(e) => set("dailyPausedUntil", e.target.value)} />
+                  {form.dailyPausedUntil && (
+                    <Button type="button" variant="outline" onClick={() => set("dailyPausedUntil", "")}>
+                      {t("settings.prefs.resume")}
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">{t("settings.prefs.pausedUntilHint")}</p>
+              </div>
             </div>
           )}
           <div>

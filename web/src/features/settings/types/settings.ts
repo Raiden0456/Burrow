@@ -43,6 +43,7 @@ export type Preferences = {
   dailyEnabled: boolean
   dailyTime: string
   dailySize: number
+  dailyPausedUntil: string
 }
 
 export type InterfaceSettings = {

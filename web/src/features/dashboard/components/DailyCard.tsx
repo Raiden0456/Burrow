@@ -39,7 +39,17 @@ export function DailyCard(props: ComponentProps<"div">) {
 
   const d = daily.data
   const time = d && new Date(d.scheduledAt * 1000).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" })
-  const description = !d ? " " : d.quizId ? t("dashboard.daily.ready") : d.enabled ? t("dashboard.daily.scheduled", { time: time ?? "" }) : t("dashboard.daily.off")
+  const formatDate = (date: string) => new Date(`${date}T00:00`).toLocaleDateString(locale, { day: "numeric", month: "long" })
+  const stale = !!d?.quizDate && d.quizDate !== d.date
+  const description = !d ? " " : stale
+      ? t("dashboard.daily.unfinished", { date: formatDate(d.quizDate!) })
+      : d.quizId
+        ? t("dashboard.daily.ready")
+        : !d.enabled
+          ? t("dashboard.daily.off")
+          : d.pausedUntil
+            ? t("dashboard.daily.paused", { date: formatDate(d.pausedUntil) })
+            : t("dashboard.daily.scheduled", { time: time ?? "" })
 
   return (
     <Card {...props} className={cn("border-l-4 border-l-hue-blue", props.className)}>
@@ -56,7 +66,7 @@ export function DailyCard(props: ComponentProps<"div">) {
         ) : d?.quizId ? (
           <div>
             <Button asChild className="max-md:w-full">
-              <Link to={`/quiz/${d.quizId}`}>{t("dashboard.daily.open")}</Link>
+              <Link to={`/quiz/${d.quizId}`}>{stale ? t("dashboard.daily.continue") : t("dashboard.daily.open")}</Link>
             </Button>
           </div>
         ) : (

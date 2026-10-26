@@ -144,6 +144,25 @@ func (q *Queries) GetDailyQuiz(ctx context.Context, dailyDate sql.NullString) (Q
 	return i, err
 }
 
+const getOpenDailyQuiz = `-- name: GetOpenDailyQuiz :one
+SELECT id, kind, topic_slug, daily_date, created_at, completed_at, checkpoint FROM quizzes WHERE daily_date IS NOT NULL AND completed_at IS NULL ORDER BY daily_date DESC LIMIT 1
+`
+
+func (q *Queries) GetOpenDailyQuiz(ctx context.Context) (Quiz, error) {
+	row := q.db.QueryRowContext(ctx, getOpenDailyQuiz)
+	var i Quiz
+	err := row.Scan(
+		&i.ID,
+		&i.Kind,
+		&i.TopicSlug,
+		&i.DailyDate,
+		&i.CreatedAt,
+		&i.CompletedAt,
+		&i.Checkpoint,
+	)
+	return i, err
+}
+
 const getQuiz = `-- name: GetQuiz :one
 SELECT id, kind, topic_slug, daily_date, created_at, completed_at, checkpoint FROM quizzes WHERE id = ?
 `
