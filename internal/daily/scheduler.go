@@ -18,6 +18,7 @@ import (
 
 const (
 	dateLayout    = "2006-01-02"
+	lastRunKey    = "daily_last_run"
 	retryAfter    = 30 * time.Minute
 	buildDeadline = 10 * time.Minute
 )
@@ -59,10 +60,19 @@ func (s *Scheduler) tick(ctx context.Context, now time.Time) {
 	if !prefs.DailyEnabled || prefs.DailyPaused(now) || now.Before(prefs.DailyAt(now)) {
 		return
 	}
+	today := now.Format(dateLayout)
+	var lastRun string
+	if _, err := s.settings.Get(ctx, lastRunKey, &lastRun); err != nil {
+		slog.Error("daily: load last run", "err", err)
+		return
+	}
+	if lastRun == today {
+		return
+	}
 	if q, err := s.Pending(ctx, now); err != nil {
 		slog.Error("daily: load pending quiz", "err", err)
 		return
-	} else if q != nil && q.DailyDate.String != now.Format(dateLayout) {
+	} else if q != nil && q.DailyDate.String != today {
 		return
 	}
 	if !s.lastFailure.IsZero() && now.Sub(s.lastFailure) < retryAfter {
@@ -82,6 +92,9 @@ func (s *Scheduler) tick(ctx context.Context, now time.Time) {
 		return
 	}
 	s.lastFailure = time.Time{}
+	if err := s.settings.Put(ctx, lastRunKey, today); err != nil {
+		slog.Error("daily: save last run", "err", err)
+	}
 	if !created {
 		return
 	}

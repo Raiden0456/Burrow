@@ -10,6 +10,9 @@ SELECT * FROM quizzes WHERE id = ?;
 -- name: GetDailyQuiz :one
 SELECT * FROM quizzes WHERE daily_date = ?;
 
+-- name: DeleteQuiz :execrows
+DELETE FROM quizzes WHERE id = ?;
+
 -- name: GetOpenDailyQuiz :one
 SELECT * FROM quizzes WHERE daily_date IS NOT NULL AND completed_at IS NULL ORDER BY daily_date DESC LIMIT 1;
 

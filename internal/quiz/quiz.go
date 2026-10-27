@@ -512,6 +512,17 @@ func (s *Service) SaveDraft(ctx context.Context, quizID, questionID int64, resp 
 	return nil
 }
 
+func (s *Service) Delete(ctx context.Context, id int64) error {
+	n, err := s.q.DeleteQuiz(ctx, id)
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return sql.ErrNoRows
+	}
+	return nil
+}
+
 func kindOf(q db.Quiz) string {
 	if q.Checkpoint {
 		return quizCheckpoint

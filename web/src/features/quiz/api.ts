@@ -22,6 +22,7 @@ export const quizApi = {
   createReview: (size: number) => api.post<{ id: number }>("/api/quizzes/review", { size }),
   list: (f: QuizFilter = {}) => api.get<QuizSummary[]>(`/api/quizzes?${query(f)}`),
   get: (id: number) => api.get<Quiz>(`/api/quizzes/${id}`),
+  delete: (id: number) => api.delete(`/api/quizzes/${id}`),
   answer: (quizId: number, questionId: number, response: QuizResponse) =>
     api.post<AnswerOutcome>(`/api/quizzes/${quizId}/answers`, { questionId, response }),
   saveDraft: (quizId: number, questionId: number, response: QuizResponse) =>

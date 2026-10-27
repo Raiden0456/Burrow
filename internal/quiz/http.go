@@ -27,6 +27,7 @@ func (s *Service) Routes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/quizzes/review", httpx.Handle(s.createReview))
 	mux.HandleFunc("GET /api/quizzes", httpx.Handle(s.list))
 	mux.HandleFunc("GET /api/quizzes/{id}", httpx.Handle(s.get))
+	mux.HandleFunc("DELETE /api/quizzes/{id}", httpx.Handle(s.delete))
 	mux.HandleFunc("POST /api/quizzes/{id}/answers", httpx.Handle(s.answer))
 	mux.HandleFunc("PUT /api/quizzes/{id}/drafts", httpx.Handle(s.saveDraft))
 	mux.HandleFunc("POST /api/quizzes/{id}/questions/{qid}/hints", httpx.Handle(s.hint))
@@ -121,6 +122,18 @@ func (s *Service) get(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	httpx.JSON(w, http.StatusOK, view)
+	return nil
+}
+
+func (s *Service) delete(w http.ResponseWriter, r *http.Request) error {
+	id, err := httpx.PathID(r, "id")
+	if err != nil {
+		return err
+	}
+	if err := s.Delete(r.Context(), id); err != nil {
+		return err
+	}
+	w.WriteHeader(http.StatusNoContent)
 	return nil
 }
 

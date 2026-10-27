@@ -168,6 +168,8 @@ export const en = {
   "quiz.deepDive": "Deep dive",
   "quiz.discuss": "Discuss in chat",
   "quiz.continue": "Continue",
+  "quiz.delete": "Delete quiz",
+  "quiz.deleteConfirm": "Delete the quiz \"{title}\"? Answers you already gave stay in your progress.",
   "quiz.next": "Next question",
   "quiz.seeResults": "See results",
   "quiz.submit": "Submit",

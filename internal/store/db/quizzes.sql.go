@@ -125,6 +125,18 @@ func (q *Queries) CreateQuiz(ctx context.Context, arg CreateQuizParams) (Quiz, e
 	return i, err
 }
 
+const deleteQuiz = `-- name: DeleteQuiz :execrows
+DELETE FROM quizzes WHERE id = ?
+`
+
+func (q *Queries) DeleteQuiz(ctx context.Context, id int64) (int64, error) {
+	result, err := q.db.ExecContext(ctx, deleteQuiz, id)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
 const getDailyQuiz = `-- name: GetDailyQuiz :one
 SELECT id, kind, topic_slug, daily_date, created_at, completed_at, checkpoint FROM quizzes WHERE daily_date = ?
 `

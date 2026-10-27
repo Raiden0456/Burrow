@@ -174,6 +174,8 @@ export const ru: Messages = {
   "quiz.deepDive": "Подробный разбор",
   "quiz.discuss": "Обсудить в чате",
   "quiz.continue": "Продолжить",
+  "quiz.delete": "Удалить квиз",
+  "quiz.deleteConfirm": "Удалить квиз «{title}»? Уже данные ответы останутся в прогрессе.",
   "quiz.next": "Следующий вопрос",
   "quiz.seeResults": "К результатам",
   "quiz.submit": "Ответить",
