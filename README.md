@@ -19,6 +19,7 @@
 - **Inline hints**: up to three progressively stronger hints right under the question, and an in-depth explanation of your answer afterwards.
 - **Nothing gets lost**: lessons, quizzes and drills are generated in the background, so you can leave the page and get notified when they are ready. Every quiz is saved and can be resumed, and answer drafts and drill code are autosaved.
 - **Coding drills**: the AI writes an exercise with hidden tests, the server checks that the reference solution passes before showing it to you, and your code runs with `go test` in a sandboxed temp module.
+- **Bug Hunt**: debug a complete but broken Go implementation, inspect regression tests and verified failing output, and unlock a root-cause explanation once your fix passes.
 - **Spaced repetition (FSRS)** schedules every answered question for review at the right time.
 - **Daily quiz**: due reviews plus fresh questions on your weakest topics, built automatically every day, with Web Push notifications.
 - **Ask anything**: a chat with your AI mentor, with one-click "explain this" and "give me a hint" from any question or drill.

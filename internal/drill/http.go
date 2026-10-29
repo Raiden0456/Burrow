@@ -14,6 +14,7 @@ import (
 type summaryView struct {
 	ID         int64  `json:"id"`
 	Title      string `json:"title"`
+	Mode       Mode   `json:"mode"`
 	Difficulty int64  `json:"difficulty"`
 	Solved     bool   `json:"solved"`
 	CreatedAt  int64  `json:"createdAt"`
@@ -27,16 +28,19 @@ type attemptView struct {
 }
 
 type drillView struct {
-	ID          int64        `json:"id"`
-	TopicSlug   string       `json:"topicSlug"`
-	Title       string       `json:"title"`
-	Description string       `json:"description"`
-	StarterCode string       `json:"starterCode"`
-	Difficulty  int64        `json:"difficulty"`
-	Solved      bool         `json:"solved"`
-	Draft       string       `json:"draft"`
-	LastAttempt *attemptView `json:"lastAttempt"`
-	Hints       []Hint       `json:"hints"`
+	ID            int64        `json:"id"`
+	TopicSlug     string       `json:"topicSlug"`
+	Title         string       `json:"title"`
+	Description   string       `json:"description"`
+	StarterCode   string       `json:"starterCode"`
+	Mode          Mode         `json:"mode"`
+	TestCode      string       `json:"testCode,omitempty"`
+	InitialOutput string       `json:"initialOutput,omitempty"`
+	Difficulty    int64        `json:"difficulty"`
+	Solved        bool         `json:"solved"`
+	Draft         string       `json:"draft"`
+	LastAttempt   *attemptView `json:"lastAttempt"`
+	Hints         []Hint       `json:"hints"`
 }
 
 func (s *Service) Routes(mux *http.ServeMux) {
@@ -60,13 +64,20 @@ func (s *Service) list(w http.ResponseWriter, r *http.Request) error {
 	}
 	out := make([]summaryView, 0, len(rows))
 	for _, d := range rows {
-		out = append(out, summaryView{ID: d.ID, Title: d.Title, Difficulty: d.Difficulty, Solved: d.SolvedAt.Valid, CreatedAt: d.CreatedAt})
+		out = append(out, summaryView{ID: d.ID, Title: d.Title, Mode: Mode(d.Mode), Difficulty: d.Difficulty, Solved: d.SolvedAt.Valid, CreatedAt: d.CreatedAt})
 	}
 	httpx.JSON(w, http.StatusOK, out)
 	return nil
 }
 
 func (s *Service) create(w http.ResponseWriter, r *http.Request) error {
+	mode := Mode(r.URL.Query().Get("mode"))
+	if mode == "" {
+		mode = ModeImplement
+	}
+	if mode != ModeImplement && mode != ModeBugHunt {
+		return httpx.Coded(http.StatusBadRequest, "invalid_drill_mode", "invalid drill mode")
+	}
 	topic, err := s.curriculum.Lookup(r.PathValue("slug"))
 	if err != nil {
 		return err
@@ -78,7 +89,7 @@ func (s *Service) create(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	job, err := s.jobs.Start(r.Context(), jobs.KindDrill, topic.Slug, func(ctx context.Context, _ func(string)) (int64, error) {
-		d, err := s.Generate(ctx, topic.Slug)
+		d, err := s.Generate(ctx, topic.Slug, mode)
 		return d.ID, err
 	})
 	if err != nil {
@@ -173,7 +184,10 @@ func (s *Service) solution(w http.ResponseWriter, r *http.Request) error {
 	if err != nil {
 		return err
 	}
-	httpx.JSON(w, http.StatusOK, map[string]string{"solution": d.Solution, "testCode": d.TestCode})
+	if Mode(d.Mode) == ModeBugHunt && !d.SolvedAt.Valid {
+		return httpx.Coded(http.StatusForbidden, "bug_hunt_unsolved", "pass the tests to unlock the Bug Hunt explanation")
+	}
+	httpx.JSON(w, http.StatusOK, map[string]string{"solution": d.Solution, "testCode": d.TestCode, "explanation": d.Explanation})
 	return nil
 }
 
@@ -203,10 +217,15 @@ func toView(d db.Drill, a *db.DrillAttempt) drillView {
 		Title:       d.Title,
 		Description: d.Description,
 		StarterCode: d.StarterCode,
+		Mode:        Mode(d.Mode),
 		Difficulty:  d.Difficulty,
 		Solved:      d.SolvedAt.Valid,
 		Draft:       d.Draft,
 		Hints:       []Hint{},
+	}
+	if Mode(d.Mode) == ModeBugHunt {
+		v.TestCode = d.TestCode
+		v.InitialOutput = d.InitialOutput
 	}
 	if a != nil {
 		v.LastAttempt = &attemptView{Code: a.Code, Passed: a.Passed == 1, Output: a.Output, CreatedAt: a.CreatedAt}

@@ -41,17 +41,20 @@ type ChatThread struct {
 }
 
 type Drill struct {
-	ID          int64
-	TopicSlug   string
-	Title       string
-	Description string
-	StarterCode string
-	TestCode    string
-	Solution    string
-	Difficulty  int64
-	SolvedAt    sql.NullInt64
-	CreatedAt   int64
-	Draft       string
+	ID            int64
+	TopicSlug     string
+	Title         string
+	Description   string
+	StarterCode   string
+	TestCode      string
+	Solution      string
+	Difficulty    int64
+	SolvedAt      sql.NullInt64
+	CreatedAt     int64
+	Draft         string
+	Mode          string
+	Explanation   string
+	InitialOutput string
 }
 
 type DrillAttempt struct {

@@ -1,6 +1,6 @@
 -- name: CreateDrill :one
-INSERT INTO drills (topic_slug, title, description, starter_code, test_code, solution, difficulty)
-VALUES (?, ?, ?, ?, ?, ?, ?)
+INSERT INTO drills (topic_slug, title, description, starter_code, test_code, solution, difficulty, mode, explanation, initial_output)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 RETURNING *;
 
 -- name: GetDrill :one

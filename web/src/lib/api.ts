@@ -20,6 +20,8 @@ const codeMessages: Record<string, string> = {
   hint_limit: "errors.hintLimit",
   wallpaper_too_large: "errors.wallpaperTooLarge",
   wallpaper_not_image: "errors.wallpaperNotImage",
+  invalid_drill_mode: "errors.invalidDrillMode",
+  bug_hunt_unsolved: "errors.bugHuntUnsolved",
 }
 
 type Method = "GET" | "POST" | "PUT" | "DELETE"

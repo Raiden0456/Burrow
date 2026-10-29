@@ -1,6 +1,9 @@
+export type DrillMode = "implement" | "bug_hunt"
+
 export type DrillSummary = {
   id: number
   title: string
+  mode: DrillMode
   difficulty: number
   solved: boolean
   createdAt: number
@@ -25,6 +28,9 @@ export type Drill = {
   title: string
   description: string
   starterCode: string
+  mode: DrillMode
+  testCode?: string
+  initialOutput?: string
   difficulty: number
   solved: boolean
   draft: string
@@ -43,4 +49,5 @@ export type RunResult = {
 export type DrillSolution = {
   solution: string
   testCode: string
+  explanation: string
 }

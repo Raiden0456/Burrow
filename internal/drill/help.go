@@ -40,6 +40,9 @@ func (s *Service) StreamHelp(ctx context.Context, id int64, code, output string,
 
 	var b strings.Builder
 	fmt.Fprintf(&b, "<task>\n%s\n</task>\n\n<tests>\n%s\n</tests>\n\n<learner_code>\n%s\n</learner_code>\n", d.Description, d.TestCode, code)
+	if Mode(d.Mode) == ModeBugHunt {
+		b.WriteString("\nThis is a Bug Hunt: coach diagnosis of an existing bug. Start with a small observation or a question about the failing case, then make later hints progressively more specific. Do not reveal the full fix.\n")
+	}
 	if strings.TrimSpace(output) != "" {
 		fmt.Fprintf(&b, "\n<latest_go_test_output>\n%s\n</latest_go_test_output>\n", output)
 	}

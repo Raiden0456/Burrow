@@ -1,13 +1,14 @@
 import { useCallback, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, useParams } from "react-router"
-import { CheckIcon, ChevronLeftIcon, CloudOffIcon, EllipsisIcon, EyeIcon, LifeBuoyIcon, Loader2Icon, PlayIcon, RotateCcwIcon } from "lucide-react"
+import { BugIcon, CheckIcon, ChevronLeftIcon, CloudOffIcon, EllipsisIcon, EyeIcon, LifeBuoyIcon, Loader2Icon, PlayIcon, RotateCcwIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ActionBar } from "@/components/ActionBar"
 import { useIsMobile } from "@/hooks/useIsMobile"
 import { cn } from "@/lib/utils"
 import { DifficultyBadge } from "@/components/DifficultyBadge"
+import { CodeBlock } from "@/components/CodeBlock"
 import { Markdown } from "@/components/Markdown"
 import { PageLoader } from "@/components/PageLoader"
 import { ErrorAlert } from "@/components/ErrorAlert"
@@ -47,8 +48,16 @@ function DrillWorkspace({ drill }: { drill: Drill }) {
   const queryClient = useQueryClient()
   const [code, setCode] = useState(drill.draft || drill.lastAttempt?.code || drill.starterCode)
   const [result, setResult] = useState<RunResult | null>(
-    drill.lastAttempt ? { passed: drill.lastAttempt.passed, buildError: false, timedOut: false, output: drill.lastAttempt.output, durationMs: 0 } : null,
+    drill.lastAttempt
+      ? { passed: drill.lastAttempt.passed, buildError: false, timedOut: false, output: drill.lastAttempt.output, durationMs: 0 }
+      : drill.initialOutput
+        ? { passed: false, buildError: false, timedOut: false, output: drill.initialOutput, durationMs: 0 }
+        : null,
   )
+  const bugHunt = drill.mode === "bug_hunt"
+  const solved = drill.solved || result?.passed === true
+  const solutionLocked = bugHunt && !solved
+  const solutionLabel = t(bugHunt ? "drills.bugHunt.debrief" : "drills.solution")
   const [showSolution, setShowSolution] = useState(false)
   const saveState = useCodeAutosave(drill.id, code)
   const help = useDrillHelp(drill.id)
@@ -104,8 +113,14 @@ function DrillWorkspace({ drill }: { drill: Drill }) {
       </div>
       <div className="mb-4 flex flex-wrap items-center gap-2 wallpaper:text-legible">
         <h1 className="text-xl font-semibold tracking-tight md:text-2xl">{drill.title}</h1>
+        {bugHunt && (
+          <span className="flex items-center gap-1 rounded-full bg-hue-yellow/10 px-2 py-0.5 text-xs font-medium text-hue-yellow">
+            <BugIcon className="size-3" />
+            {t("drills.bugHunt.title")}
+          </span>
+        )}
         <DifficultyBadge level={drill.difficulty} />
-        {drill.solved && <span className="rounded-full bg-success/15 px-2 py-0.5 text-xs font-medium text-success">{t("drills.solved")}</span>}
+        {solved && <span className="rounded-full bg-success/15 px-2 py-0.5 text-xs font-medium text-success">{t("drills.solved")}</span>}
       </div>
 
       <div data-glass className="sticky top-0 z-30 -mx-4 mb-4 bg-background/95 px-4 py-2 backdrop-blur lg:hidden">
@@ -132,6 +147,21 @@ function DrillWorkspace({ drill }: { drill: Drill }) {
       <div className="grid gap-6 lg:grid-cols-2">
         <div data-glass className={cn("min-w-0 wallpaper:rounded-xl wallpaper:p-5", hidden("task"))}>
           <Markdown className="prose-sm">{drill.description}</Markdown>
+          {bugHunt && (
+            <div className="mt-4 flex flex-col gap-3">
+              <p className="text-sm text-muted-foreground">{t(solutionLocked ? "drills.bugHunt.locked" : "drills.bugHunt.unlocked")}</p>
+              {!solutionLocked && (
+                <Button variant="outline" className="self-start" onClick={() => setShowSolution(true)}>
+                  <EyeIcon />
+                  {solutionLabel}
+                </Button>
+              )}
+              <details className="min-w-0 rounded-lg border p-3">
+                <summary className="cursor-pointer text-sm font-medium">{t("drills.bugHunt.tests")}</summary>
+                <div className="mt-3"><CodeBlock code={drill.testCode ?? ""} lang="go" /></div>
+              </details>
+            </div>
+          )}
         </div>
 
         <div className="flex min-w-0 flex-col gap-3">
@@ -150,9 +180,9 @@ function DrillWorkspace({ drill }: { drill: Drill }) {
                 {help.streaming ? <Loader2Icon className="animate-spin" /> : <LifeBuoyIcon />}
                 {t("drills.help")}
               </Button>
-              <Button variant="ghost" onClick={() => setShowSolution(true)}>
+              <Button variant="ghost" onClick={() => setShowSolution(true)} disabled={solutionLocked}>
                 <EyeIcon />
-                {t("drills.solution")}
+                {solutionLabel}
               </Button>
             </div>
             <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground max-lg:hidden">
@@ -161,6 +191,7 @@ function DrillWorkspace({ drill }: { drill: Drill }) {
             </div>
           </div>
           <div className={cn("flex flex-col gap-3", hidden("result"))}>
+            {run.error && <ErrorAlert error={run.error} />}
             {!result && !help.streaming && drill.hints.length === 0 && (
               <p className="text-sm text-muted-foreground lg:hidden">{t("drills.resultEmpty")}</p>
             )}
@@ -171,6 +202,12 @@ function DrillWorkspace({ drill }: { drill: Drill }) {
               </div>
             )}
             {result && <RunOutput result={result} />}
+            {bugHunt && solved && (
+              <Button variant="outline" onClick={() => setShowSolution(true)}>
+                <EyeIcon />
+                {solutionLabel}
+              </Button>
+            )}
             <HelpPanel hints={drill.hints} streamingText={help.streaming ? help.text : null} error={help.error} />
           </div>
         </div>
@@ -195,15 +232,15 @@ function DrillWorkspace({ drill }: { drill: Drill }) {
               <RotateCcwIcon />
               {t("drills.reset")}
             </DropdownMenuItem>
-            <DropdownMenuItem className="py-3" onSelect={() => setShowSolution(true)}>
+            <DropdownMenuItem className="py-3" onSelect={() => setShowSolution(true)} disabled={solutionLocked}>
               <EyeIcon />
-              {t("drills.solution")}
+              {solutionLabel}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </ActionBar>
 
-      <SolutionDialog drillId={drill.id} open={showSolution} onOpenChange={setShowSolution} />
+      <SolutionDialog drillId={drill.id} bugHunt={bugHunt} open={showSolution} onOpenChange={setShowSolution} />
     </div>
   )
 }

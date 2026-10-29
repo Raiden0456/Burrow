@@ -10,19 +10,22 @@ import (
 )
 
 const createDrill = `-- name: CreateDrill :one
-INSERT INTO drills (topic_slug, title, description, starter_code, test_code, solution, difficulty)
-VALUES (?, ?, ?, ?, ?, ?, ?)
-RETURNING id, topic_slug, title, description, starter_code, test_code, solution, difficulty, solved_at, created_at, draft
+INSERT INTO drills (topic_slug, title, description, starter_code, test_code, solution, difficulty, mode, explanation, initial_output)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+RETURNING id, topic_slug, title, description, starter_code, test_code, solution, difficulty, solved_at, created_at, draft, mode, explanation, initial_output
 `
 
 type CreateDrillParams struct {
-	TopicSlug   string
-	Title       string
-	Description string
-	StarterCode string
-	TestCode    string
-	Solution    string
-	Difficulty  int64
+	TopicSlug     string
+	Title         string
+	Description   string
+	StarterCode   string
+	TestCode      string
+	Solution      string
+	Difficulty    int64
+	Mode          string
+	Explanation   string
+	InitialOutput string
 }
 
 func (q *Queries) CreateDrill(ctx context.Context, arg CreateDrillParams) (Drill, error) {
@@ -34,6 +37,9 @@ func (q *Queries) CreateDrill(ctx context.Context, arg CreateDrillParams) (Drill
 		arg.TestCode,
 		arg.Solution,
 		arg.Difficulty,
+		arg.Mode,
+		arg.Explanation,
+		arg.InitialOutput,
 	)
 	var i Drill
 	err := row.Scan(
@@ -48,6 +54,9 @@ func (q *Queries) CreateDrill(ctx context.Context, arg CreateDrillParams) (Drill
 		&i.SolvedAt,
 		&i.CreatedAt,
 		&i.Draft,
+		&i.Mode,
+		&i.Explanation,
+		&i.InitialOutput,
 	)
 	return i, err
 }
@@ -83,7 +92,7 @@ func (q *Queries) CreateDrillAttempt(ctx context.Context, arg CreateDrillAttempt
 }
 
 const getDrill = `-- name: GetDrill :one
-SELECT id, topic_slug, title, description, starter_code, test_code, solution, difficulty, solved_at, created_at, draft FROM drills WHERE id = ?
+SELECT id, topic_slug, title, description, starter_code, test_code, solution, difficulty, solved_at, created_at, draft, mode, explanation, initial_output FROM drills WHERE id = ?
 `
 
 func (q *Queries) GetDrill(ctx context.Context, id int64) (Drill, error) {
@@ -101,6 +110,9 @@ func (q *Queries) GetDrill(ctx context.Context, id int64) (Drill, error) {
 		&i.SolvedAt,
 		&i.CreatedAt,
 		&i.Draft,
+		&i.Mode,
+		&i.Explanation,
+		&i.InitialOutput,
 	)
 	return i, err
 }
@@ -156,7 +168,7 @@ func (q *Queries) ListDrillTitlesByTopic(ctx context.Context, arg ListDrillTitle
 }
 
 const listDrillsByTopic = `-- name: ListDrillsByTopic :many
-SELECT id, topic_slug, title, description, starter_code, test_code, solution, difficulty, solved_at, created_at, draft FROM drills WHERE topic_slug = ? ORDER BY id DESC
+SELECT id, topic_slug, title, description, starter_code, test_code, solution, difficulty, solved_at, created_at, draft, mode, explanation, initial_output FROM drills WHERE topic_slug = ? ORDER BY id DESC
 `
 
 func (q *Queries) ListDrillsByTopic(ctx context.Context, topicSlug string) ([]Drill, error) {
@@ -180,6 +192,9 @@ func (q *Queries) ListDrillsByTopic(ctx context.Context, topicSlug string) ([]Dr
 			&i.SolvedAt,
 			&i.CreatedAt,
 			&i.Draft,
+			&i.Mode,
+			&i.Explanation,
+			&i.InitialOutput,
 		); err != nil {
 			return nil, err
 		}
