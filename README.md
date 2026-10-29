@@ -127,6 +127,8 @@ docker compose start app
 
 Requirements: Go (see `go.mod`), Node.js 24 with pnpm, and optionally an ACP agent such as `npx @agentclientprotocol/claude-agent-acp`.
 
+Install the frontend dependencies, then run the API and Vite dev server in separate terminals:
+
 ```bash
 cd web && pnpm install && cd ..
 
