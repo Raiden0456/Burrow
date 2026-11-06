@@ -20,7 +20,7 @@ const (
 	PassScore      = 0.7
 	LearnedMastery = 0.7
 	CheckpointPass = 0.8
-	coverageTarget = 8.0
+	coverageTarget = 8
 	drillTarget    = 3.0
 	activityDays   = 28
 	dayLayout      = "2006-01-02"
@@ -288,11 +288,16 @@ func topicStats(history []db.ListAnswerHistoryRow, retention map[int64]float64, 
 	}
 
 	latest := map[string]map[int64]float64{}
-	for _, h := range history {
+	recent := map[string][]int64{}
+	for i := len(history) - 1; i >= 0; i-- {
+		h := history[i]
 		if latest[h.TopicSlug] == nil {
 			latest[h.TopicSlug] = map[int64]float64{}
 		}
-		latest[h.TopicSlug][h.QuestionID] = h.Score
+		if _, seen := latest[h.TopicSlug][h.QuestionID]; !seen {
+			latest[h.TopicSlug][h.QuestionID] = h.Score
+			recent[h.TopicSlug] = append(recent[h.TopicSlug], h.QuestionID)
+		}
 		st := get(h.TopicSlug)
 		st.LastActivity = max(st.LastActivity, h.CreatedAt)
 	}
@@ -301,15 +306,16 @@ func topicStats(history []db.ListAnswerHistoryRow, retention map[int64]float64, 
 	}
 
 	for slug, st := range stats {
-		scores := latest[slug]
-		st.Answered = len(scores)
-		recall := make(map[int64]float64, len(scores))
-		for id, score := range scores {
+		ids := recent[slug]
+		st.Answered = len(ids)
+		ids = ids[:min(len(ids), coverageTarget)]
+		recall := make(map[int64]float64, len(ids))
+		for _, id := range ids {
 			r, ok := retention[id]
 			if !ok {
 				r = 1
 			}
-			recall[id] = score * r
+			recall[id] = latest[slug][id] * r
 		}
 		st.Mastery = mastery(recall, st.DrillsSolved)
 	}

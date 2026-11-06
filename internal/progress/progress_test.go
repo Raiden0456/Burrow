@@ -138,3 +138,24 @@ func TestTopicStatsDecayWithRetention(t *testing.T) {
 		t.Fatalf("mastery = %v, want %v", st.Mastery, want)
 	}
 }
+
+func TestMasteryFollowsRecentAnswers(t *testing.T) {
+	var history []db.ListAnswerHistoryRow
+	for id := int64(1); id <= 40; id++ {
+		score := 0.0
+		if id > 32 {
+			score = 1
+		}
+		history = append(history, db.ListAnswerHistoryRow{TopicSlug: "maps", QuestionID: id, Score: score, CreatedAt: id})
+	}
+	st := topicStats(history, nil, nil)["maps"]
+	if st.Answered != 40 || st.Mastery != 1 {
+		t.Fatalf("old misses should not anchor mastery: %+v", st)
+	}
+
+	history = append(history, db.ListAnswerHistoryRow{TopicSlug: "maps", QuestionID: 1, Score: 1, CreatedAt: 41})
+	history = append(history, db.ListAnswerHistoryRow{TopicSlug: "maps", QuestionID: 40, Score: 0, CreatedAt: 42})
+	if st := topicStats(history, nil, nil)["maps"]; st.Mastery != 0.88 {
+		t.Fatalf("a re-answered question counts once with its latest score: %+v", st)
+	}
+}
