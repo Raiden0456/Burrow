@@ -32,7 +32,7 @@ export function DashboardPage() {
   const p = progress.data
   return (
     <div className="flex flex-col gap-6">
-      <HeroCard {...enter(0)} streak={p.streak} activeToday={p.activeToday} />
+      <HeroCard {...enter(0)} streak={p.streak} />
 
       {providers.data?.length === 0 && (
         <Alert {...enter(1)} className="enter border-hue-yellow/40 bg-hue-yellow/10">

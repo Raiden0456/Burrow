@@ -28,7 +28,7 @@ export function TopicsPage() {
 
   return (
     <>
-      <PageHeader title={t("topics.title")} description={t("topics.description")} />
+      <PageHeader title={t("topics.title")} />
       <div className="flex flex-col gap-6">
         {curriculum.modules.map((module, mi) => (
           <Card key={module.slug} {...enter(mi + 1)}>

@@ -10,15 +10,12 @@ function greetingKey(hour: number): MessageKey {
   return "dashboard.greeting.evening"
 }
 
-export function HeroCard({ streak, activeToday, className, ...props }: { streak: number; activeToday: boolean } & ComponentProps<"div">) {
+export function HeroCard({ streak, className, ...props }: { streak: number } & ComponentProps<"div">) {
   const { t } = useI18n()
 
   return (
     <div {...props} className={cn("flex flex-wrap items-center justify-between gap-4", className)}>
-      <div className="text-legible">
-        <h1 className="text-2xl font-semibold tracking-tight md:text-3xl">{t(greetingKey(new Date().getHours()))}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{activeToday ? t("dashboard.subtitle.active") : t("dashboard.subtitle.idle")}</p>
-      </div>
+      <h1 className="text-legible text-2xl font-semibold tracking-tight md:text-3xl">{t(greetingKey(new Date().getHours()))}</h1>
       {streak > 0 && (
         <div className="flex items-center gap-2 rounded-full bg-hue-orange/15 px-3 py-1.5 text-sm font-medium text-hue-orange">
           <FlameIcon className="size-4" />

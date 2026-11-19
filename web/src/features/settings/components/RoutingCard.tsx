@@ -1,7 +1,7 @@
 import type { ComponentProps } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { WaypointsIcon } from "lucide-react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { IconChip } from "@/components/IconChip"
@@ -30,12 +30,9 @@ export function RoutingCard(props: ComponentProps<"div">) {
 
   return (
     <Card {...props}>
-      <CardHeader className="flex flex-row items-start gap-3">
+      <CardHeader className="flex flex-row items-center gap-3">
         <IconChip icon={WaypointsIcon} tone="cyan" />
-        <div className="flex flex-col gap-1">
-          <CardTitle>{t("settings.routing.title")}</CardTitle>
-          <CardDescription>{t("settings.routing.description")}</CardDescription>
-        </div>
+        <CardTitle>{t("settings.routing.title")}</CardTitle>
       </CardHeader>
       <CardContent className="grid gap-4 sm:grid-cols-3">
         {tasks.map(({ key, label, hint }) => (

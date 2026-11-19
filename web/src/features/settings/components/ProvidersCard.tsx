@@ -4,7 +4,7 @@ import { BotIcon, Loader2Icon, PencilIcon, PlugZapIcon, PlusIcon, Trash2Icon } f
 import { toast } from "sonner"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { IconChip } from "@/components/IconChip"
 import { useI18n } from "@/i18n"
@@ -46,12 +46,9 @@ export function ProvidersCard(props: ComponentProps<"div">) {
 
   return (
     <Card {...props}>
-      <CardHeader className="flex flex-row items-start gap-3">
+      <CardHeader className="flex flex-row items-center gap-3">
         <IconChip icon={BotIcon} tone="blue" />
-        <div className="flex flex-1 flex-col gap-1">
-          <CardTitle>{t("settings.providers.title")}</CardTitle>
-          <CardDescription>{t("settings.providers.description")}</CardDescription>
-        </div>
+        <CardTitle className="flex-1">{t("settings.providers.title")}</CardTitle>
         <CardAction>
           <Button size="sm" onClick={() => openDialog(null)}>
             <PlusIcon />

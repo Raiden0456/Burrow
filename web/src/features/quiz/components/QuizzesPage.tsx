@@ -7,7 +7,7 @@ export function QuizzesPage() {
   const { t } = useI18n()
   return (
     <>
-      <PageHeader title={t("quizzes.title")} description={t("quizzes.description")} />
+      <PageHeader title={t("quizzes.title")} />
       <Tabs defaultValue="open">
         <TabsList className="max-md:w-full">
           <TabsTrigger value="open">{t("quizzes.open")}</TabsTrigger>
